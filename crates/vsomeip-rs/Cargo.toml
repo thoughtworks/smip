@@ -1,0 +1,10 @@
+[package]
+name = "vsomeip-rs"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cxx = { version = "1.0", features = ["default", "c++17"] }
+vsomeip-sys = {path = "./vsomeip-sys"}
