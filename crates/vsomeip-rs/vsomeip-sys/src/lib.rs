@@ -1,5 +1,8 @@
 use autocxx::prelude::*;
+#[allow(unused)]
 use cxx::*;
+
+mod callback;
 
 include_cpp! {
     // C++ headers we want to include.
@@ -17,17 +20,21 @@ include_cpp! {
     // generate!("print_point")
 }
 
-#[cxx::bridge[namespace = "vsomeip_v3"]]
+#[cxx::bridge]
 mod ffi2 {
-    unsafe extern "C++" {
-        include!("shim.hpp");
-        type application = ffi::vsomeip_v3::application;
-        type message = ffi::vsomeip_v3::message;
-        type c_void;
-        type shim_message_handler_t = extern "C" fn(arg1: SharedPtr<message>, arg2: *mut c_void);
 
-        unsafe fn application_register_message_handler(application: &application, _service: u16, _instance: u16, _method: u16, _handler: shim_message_handler_t, user_data: *mut c_void);
+    extern "C++" {
+        include!("shim.hpp");
+        #[namespace = "vsomeip_v3"]
+        type application = crate::ffi::vsomeip_v3::application;
+        type message_handler_callback_t = crate::callback::MessageHandlerCallback;
+        type c_void;
+
+        unsafe fn application_register_message_handler(application: Pin<&mut application>, _service: u16, _instance: u16, _method: u16, _handler: message_handler_callback_t, user_data: *mut c_void);
     }
 }
 
 pub use ffi::vsomeip_v3::*;
+
+pub use callback::*;
+pub use ffi2::application_register_message_handler;
