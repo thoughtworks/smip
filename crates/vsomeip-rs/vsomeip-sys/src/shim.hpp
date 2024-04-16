@@ -14,7 +14,14 @@ using c_void = void;
 typedef void (*message_handler_callback_t)(std::shared_ptr<vsomeip_v3::message>, c_void*);
 
 void application_register_message_handler(vsomeip_v3::application& application, vsomeip_v3::service_t _service, vsomeip_v3::instance_t _instance, vsomeip_v3::method_t _method, message_handler_callback_t _handler, c_void* user_data) {
-    application.register_message_handler(_service, _instance, _method, [_handler, user_data] (const std::shared_ptr<vsomeip_v3::message>& message) {
+    application.register_message_handler(_service, _instance, _method, [=] (const std::shared_ptr<vsomeip_v3::message>& message) {
          _handler(message, user_data);
+    });
+}
+typedef void (*state_handler_callback_t)(vsomeip_v3::state_type_e, c_void*);
+
+void application_register_state_handler(vsomeip_v3::application& application, state_handler_callback_t _handler, c_void* user_data) {
+    application.register_state_handler([=](vsomeip_v3::state_type_e state) {
+        _handler(state, user_data);
     });
 }

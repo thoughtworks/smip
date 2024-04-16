@@ -1,6 +1,6 @@
 use cxx::*;
 
-use crate::{primitives::{InstanceId, MajorVersion, MethodId, MinorVersion, ServiceId}, util::AsPinMut, Message};
+use crate::{primitives::{InstanceId, MajorVersion, MethodId, MinorVersion, ServiceId}, util::AsPinMut, Message, State};
 
 pub struct Application {
     pub(crate) inner: SharedPtr<vsomeip_sys::application>,
@@ -53,5 +53,19 @@ impl Application {
             vsomeip_sys::application_register_message_handler(self.pin_mut(), service_id, instance_id, method_id, message_callback.f, message_callback.user_data as *mut _); 
         }
 
+    }
+    pub fn register_state_handler<F: FnMut(State)>(&self, mut f: F) {
+        let state_callback = vsomeip_sys::StateHandlerCallback::from_closure(|raw_state| {
+            let state = State::from(raw_state);
+
+            (f)(state);
+        });
+
+        unsafe {
+            vsomeip_sys::application_register_state_handler(self.pin_mut(), state_callback.f, state_callback.user_data as *mut _);
+        }
+    }
+    pub fn unregister_state_handler(&self) {
+        vsomeip_sys::application::unregister_state_handler(self.pin_mut());
     }
 }
