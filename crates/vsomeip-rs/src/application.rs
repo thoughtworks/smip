@@ -38,8 +38,20 @@ impl Application {
     pub fn send(&self, message: &Message) {
         vsomeip_sys::application::send(self.pin_mut(), message.inner.clone());
     }
-    pub fn register_message_handler(&self, service_id: ServiceId, instance_id: InstanceId, method_id: MethodId) {
-        let handler: vsomeip_sys::message_handler_t = |f| {};
-        vsomeip_sys::application::register_message_handler(self.pin_mut(), service_id, instance_id, method_id, todo!());
+    pub fn register_message_handler<F: FnMut(&Message)>(&self, service_id: ServiceId, instance_id: InstanceId, method_id: MethodId, mut f: F) {
+        
+        let message_callback = vsomeip_sys::MessageHandlerCallback::from_closure(|raw_message| {
+            let message = Message {
+                inner: raw_message
+            };
+
+            (f)(&message);
+        });
+
+
+        unsafe { 
+            vsomeip_sys::application_register_message_handler(self.pin_mut(), service_id, instance_id, method_id, message_callback.f, message_callback.user_data as *mut _); 
+        }
+
     }
 }

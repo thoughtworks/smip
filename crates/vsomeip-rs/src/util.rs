@@ -11,7 +11,7 @@ unsafe fn shared_to_pin<T: SharedPtrTarget>(shared: &SharedPtr<T>) -> Pin<&mut T
     pin
 }
 
-pub unsafe trait AsPinMut {
+pub(crate) unsafe trait AsPinMut {
     type Inner: SharedPtrTarget;
     fn inner(&self) -> &SharedPtr<Self::Inner>;
     fn pin_mut(&self) -> Pin<&mut Self::Inner> {

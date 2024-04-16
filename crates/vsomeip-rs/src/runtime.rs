@@ -53,6 +53,10 @@ fn test_application() {
     let runtime = Runtime::get();
     let app = runtime.create_application_with_name("Test");
     app.start();
+    app.offer_service(1234, 1, 1, 0);
+    app.register_message_handler(1234, 1, 5, |message| {
+        println!("{:?}", message.get_payload().get_data());
+    });
     std::thread::sleep(std::time::Duration::from_secs(5));
     app.stop();
 }
