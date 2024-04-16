@@ -18,13 +18,13 @@ impl Message {
         Runtime::get().create_message(reliable)
     }
     pub fn get_payload(&self) -> Payload {
-        let payload = self.inner.get_payload();
+        let payload = unsafe { self.inner.get_payload() };
 
         Payload {
             inner: payload
         }
     }
     pub fn set_payload(&mut self, payload: &Payload) {
-        vsomeip_sys::message::set_payload(self.pin_mut(), payload.inner.clone());
+        unsafe { vsomeip_sys::message::set_payload(self.pin_mut(), payload.inner.clone()) };
     }
 }

@@ -30,8 +30,8 @@ impl Payload {
         unsafe { vsomeip_sys::payload::set_data(self.pin_mut(), ptr, length) }
     }
     pub fn get_data<'a>(&'a self) -> &'a [u8] {
-        let data = vsomeip_sys::payload::get_data(self.pin_mut());
-        let len = vsomeip_sys::payload::get_length(&self.inner) as usize;
+        let data = unsafe { vsomeip_sys::payload::get_data(self.pin_mut()) };
+        let len = unsafe { vsomeip_sys::payload::get_length(&self.inner) as usize };
 
         unsafe { std::slice::from_raw_parts::<'a, u8>(data, len) }
     }

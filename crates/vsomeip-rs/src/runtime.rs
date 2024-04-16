@@ -16,13 +16,13 @@ unsafe impl AsPinMut for Runtime {
 impl Runtime {
     pub fn get() -> Self {
         Self {
-            inner: vsomeip_sys::runtime::get()
+            inner: unsafe  { vsomeip_sys::runtime::get() }
         }
     }
     pub fn create_application_with_name(&self, name: impl AsRef<str>) -> Application {
         let name = name.as_ref();
         let_cxx_string!(name_cxx = name);
-        let application = vsomeip_sys::runtime::create_application(self.pin_mut(), &name_cxx);
+        let application = unsafe { vsomeip_sys::runtime::create_application(self.pin_mut(), &name_cxx) }; 
 
         let app = Application {
             inner: application,
@@ -33,14 +33,14 @@ impl Runtime {
         app
     }
     pub fn create_payload(&self) -> Payload {
-        let inner = self.inner.create_payload();
+        let inner = unsafe { self.inner.create_payload() };
 
         Payload {
             inner
         }
     }
     pub fn create_message(&self, reliable: bool) -> Message {
-        let inner = self.inner.create_message(reliable);
+        let inner = unsafe { self.inner.create_message(reliable) };
 
         Message {
             inner
