@@ -1,7 +1,11 @@
 #pragma once
 #include <vsomeip/application.hpp>
 #include <vsomeip/handler.hpp>
+#include <vsomeip/message.hpp>
 
+std::shared_ptr<vsomeip_v3::message_base> as_message_base(const std::shared_ptr<vsomeip_v3::message>& message) {
+    return std::static_pointer_cast<vsomeip_v3::message_base>(message);
+}
 using c_void = void;
 typedef void (*message_handler_callback_t)(const std::shared_ptr<vsomeip_v3::message>*, c_void*);
 

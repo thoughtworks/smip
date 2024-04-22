@@ -2,7 +2,7 @@ use cxx::*;
 use cxx::private::SharedPtrTarget;
 use std::pin::Pin;
 
-unsafe fn shared_to_pin<'a, T: SharedPtrTarget>(shared: &'a SharedPtr<T>) -> Pin<&'a mut T> {
+pub(crate) unsafe fn shared_to_pin<'a, T: SharedPtrTarget>(shared: &'a SharedPtr<T>) -> Pin<&'a mut T> {
     let shared_ref = shared.as_ref().unwrap();
     
     #[allow(clippy::cast_ref_to_mut)]

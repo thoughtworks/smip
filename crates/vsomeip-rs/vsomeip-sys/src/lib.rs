@@ -13,6 +13,7 @@ include_cpp! {
     generate!("vsomeip_v3::runtime")
     generate!("vsomeip_v3::application")
     generate!("vsomeip_v3::message")
+    generate!("vsomeip_v3::message_base")
     generate!("vsomeip_v3::payload")
     generate!("vsomeip_v3::state_type_e")
     // What types and functions we want to generate
@@ -22,7 +23,14 @@ include_cpp! {
 
 #[cxx::bridge]
 mod ffi2 {
-
+    extern "C++" {
+        include!("shim.hpp");
+        #[namespace = "vsomeip_v3"]
+        type message = crate::ffi::vsomeip_v3::message;
+        #[namespace = "vsomeip_v3"]
+        type message_base = crate::ffi::vsomeip_v3::message_base;
+        unsafe fn as_message_base(message: &SharedPtr<message>) -> SharedPtr<message_base>;
+    }
     extern "C++" {
         include!("shim.hpp");
         #[namespace = "vsomeip_v3"]
@@ -44,3 +52,4 @@ pub use callback::*;
 pub use ffi2::application_register_message_handler;
 pub use ffi2::application_register_state_handler;
 pub use ffi2::application_register_availability_handler;
+pub use ffi2::as_message_base;
