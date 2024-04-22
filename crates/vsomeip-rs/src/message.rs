@@ -53,6 +53,9 @@ impl Message {
         }
     }
     pub fn set_service(&mut self, service_id: u16) {
+        // FIXME: Converting to SharedPtr<message_base> is costly 
+        // autocxx doesn't generate methods on the base class currently
+        // Ideally we should have wrapper functions the methods on the base class message_base in C++
         let message_base = unsafe { vsomeip_sys::as_message_base(&self.inner) };
         let pin_mut = unsafe { util::shared_to_pin(&message_base) };
         unsafe { vsomeip_sys::message_base::set_service(pin_mut, service_id) };
@@ -76,4 +79,57 @@ impl Message {
         unsafe { vsomeip_sys::message::set_payload(self.pin_mut(), payload.inner.clone()) };
     }
     
+}
+
+// Write tests to check the functionality of the message module
+// Write meaningful tests to check the functionality of the message module
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{ReturnCode, MessageType};
+
+    #[test]
+    fn test_message() {
+        let mut message = Message::new(true);
+
+        assert_eq!(message.get_service(), 0);
+        assert_eq!(message.get_instance(), 0);
+        assert_eq!(message.get_method(), 0);
+        assert_eq!(message.get_return_code(), ReturnCode::Ok);
+        assert_eq!(message.get_message_type(), MessageType::Unknown);
+
+        let payload = Payload::with_data("Hello".as_bytes());
+        message.set_payload(&payload);
+        assert_eq!(message.get_payload().get_data(), "Hello".as_bytes());
+
+        message.set_service(1234);
+        assert_eq!(message.get_service(), 1234);
+
+        message.set_instance(4567);
+        assert_eq!(message.get_instance(), 4567);
+
+        message.set_method(890);
+        assert_eq!(message.get_method(), 890);
+
+        message.set_return_code(ReturnCode::Ok);
+        assert_eq!(message.get_return_code(), ReturnCode::Ok);
+    }
+
+    #[test]
+    pub fn test_request_response() {
+        let request = Message::request(true);
+        let response = Message::response(&request);
+
+        assert_eq!(request.get_service(), 0);
+        assert_eq!(request.get_instance(), 0);
+        assert_eq!(request.get_method(), 0);
+        assert_eq!(request.get_return_code(), ReturnCode::Ok);
+        assert_eq!(request.get_message_type(), MessageType::Request);
+
+        assert_eq!(response.get_service(), 0);
+        assert_eq!(response.get_instance(), 0);
+        assert_eq!(response.get_method(), 0);
+        assert_eq!(response.get_return_code(), ReturnCode::Ok);
+        assert_eq!(response.get_message_type(), MessageType::Response);
+    }
 }

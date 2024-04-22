@@ -29,9 +29,9 @@ impl From<vsomeip_sys::state_type_e> for State {
         }
     }
 }
-impl Into<vsomeip_sys::state_type_e> for State {
-    fn into(self) -> vsomeip_sys::state_type_e {
-        match self {
+impl From<State> for vsomeip_sys::state_type_e {
+    fn from(value: State) -> Self {
+        match value {
             State::Registered => vsomeip_sys::state_type_e::ST_REGISTERED,
             State::Deregistered => vsomeip_sys::state_type_e::ST_DEREGISTERED,
         }
@@ -73,9 +73,9 @@ impl From<vsomeip_sys::return_code_e> for ReturnCode {
     }
 }
 
-impl Into<vsomeip_sys::return_code_e> for ReturnCode {
-    fn into(self) -> vsomeip_sys::return_code_e {
-        match self {
+impl From<ReturnCode> for vsomeip_sys::return_code_e {
+    fn from(value: ReturnCode) -> Self {
+        match value {
             ReturnCode::Ok => vsomeip_sys::return_code_e::E_OK,
             ReturnCode::NotOk => vsomeip_sys::return_code_e::E_NOT_OK,
             ReturnCode::UnknownService => vsomeip_sys::return_code_e::E_UNKNOWN_SERVICE,
@@ -124,9 +124,9 @@ impl From<vsomeip_sys::message_type_e> for MessageType {
         }
     }
 }
-impl Into<vsomeip_sys::message_type_e> for MessageType {
-    fn into(self) -> vsomeip_sys::message_type_e {
-        match self {
+impl From<MessageType> for vsomeip_sys::message_type_e {
+    fn from(value: MessageType) -> Self {
+        match value {
             MessageType::Request => vsomeip_sys::message_type_e::MT_REQUEST,
             MessageType::RequestNoReturn => vsomeip_sys::message_type_e::MT_REQUEST_NO_RETURN,
             MessageType::Notification => vsomeip_sys::message_type_e::MT_NOTIFICATION,
