@@ -1,6 +1,6 @@
 use cxx::*;
 
-use crate::{util::AsPinMut, Application, Message, Payload};
+use crate::{util::AsPinMut, Application, Message, Payload, VSomeIpError};
 
 pub struct Runtime {
     inner: SharedPtr<vsomeip_sys::runtime>
