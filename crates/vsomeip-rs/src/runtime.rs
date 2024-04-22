@@ -28,7 +28,9 @@ impl Runtime {
             inner: application,
         };
 
-        app.init();
+        if !app.init() {
+            panic!("Failed to init application");
+        }
 
         app
     }
@@ -46,17 +48,18 @@ impl Runtime {
             inner
         }
     }
-}
+    pub fn create_response(&self, request: &Message) -> Message {
+        let raw_message = unsafe {vsomeip_sys::runtime::create_response(&self.inner, request.inner())};
 
-#[test]
-fn test_application() {
-    let runtime = Runtime::get();
-    let app = runtime.create_application_with_name("Test");
-    app.start();
-    app.offer_service(1234, 1, 1, 0);
-    app.register_message_handler(1234, 1, 5, |message| {
-        println!("{:?}", message.get_payload().get_data());
-    });
-    std::thread::sleep(std::time::Duration::from_secs(5));
-    app.stop();
+        Message {
+            inner: raw_message
+        }
+    }
+    pub fn create_request(&self, reliable: bool) -> Message {
+        let raw_message = unsafe { vsomeip_sys::runtime::create_request(&self.inner, reliable) };
+
+        Message {
+            inner: raw_message
+        }
+    }
 }

@@ -5,7 +5,7 @@ pub fn main() -> miette::Result<()> {
     // .compile("vsomeip-sys");
 
     println!("cargo:rerun-if-changed=src/lib.rs");
-    println!("cargo:rerun-if-changed=src/shim.h");
+    println!("cargo:rerun-if-changed=src/shim.hpp");
 
     let mut b = autocxx_build::Builder::new("src/lib.rs", &["vsomeip/vsomeip.hpp", "src"])
     .build()?;

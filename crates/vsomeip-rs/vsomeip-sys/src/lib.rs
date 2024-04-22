@@ -29,10 +29,12 @@ mod ffi2 {
         type application = crate::ffi::vsomeip_v3::application;
         type message_handler_callback_t = crate::callback::MessageHandlerCallback;
         type state_handler_callback_t = crate::callback::StateHandlerCallback;
+        type availability_handler_callback_t = crate::callback::AvailabilityHandlerCallback;
         type c_void;
 
         unsafe fn application_register_message_handler(application: Pin<&mut application>, _service: u16, _instance: u16, _method: u16, _handler: message_handler_callback_t, user_data: *mut c_void);
         unsafe fn application_register_state_handler(application: Pin<&mut application>, _handler: state_handler_callback_t, user_data: *mut c_void);
+        unsafe fn application_register_availability_handler(application: Pin<&mut application>, _service: u16, _instance: u16, _handler: availability_handler_callback_t, _major: u8, _minor: u32, user_data: *mut c_void);
     }
 }
 
@@ -41,3 +43,4 @@ pub use ffi::vsomeip_v3::*;
 pub use callback::*;
 pub use ffi2::application_register_message_handler;
 pub use ffi2::application_register_state_handler;
+pub use ffi2::application_register_availability_handler;

@@ -17,6 +17,12 @@ impl Message {
     pub fn new(reliable: bool) -> Self {
         Runtime::get().create_message(reliable)
     }
+    pub fn request(reliable: bool) -> Message {
+        Runtime::get().create_request(reliable)
+    }
+    pub fn response(request: &Message) -> Message {
+        Runtime::get().create_response(request) 
+    } 
     pub fn get_payload(&self) -> Payload {
         let payload = unsafe { self.inner.get_payload() };
 

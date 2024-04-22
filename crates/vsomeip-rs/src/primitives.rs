@@ -4,7 +4,7 @@ pub type InstanceId = vsomeip_sys::instance_t;
 pub type MajorVersion = vsomeip_sys::major_version_t;
 pub type MinorVersion = vsomeip_sys::minor_version_t;
 
-
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum State {
     Registered,
     Deregistered
