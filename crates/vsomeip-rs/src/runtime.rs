@@ -19,7 +19,7 @@ impl Runtime {
             inner: unsafe  { vsomeip_sys::runtime::get() }
         }
     }
-    pub fn create_application_with_name(&self, name: impl AsRef<str>) -> Application {
+    pub fn create_application_with_name(&self, name: impl AsRef<str>) -> Result<Application, VSomeIpError> {
         let name = name.as_ref();
         let_cxx_string!(name_cxx = name);
         let application = unsafe { vsomeip_sys::runtime::create_application(self.pin_mut(), &name_cxx) }; 
@@ -29,10 +29,10 @@ impl Runtime {
         };
 
         if !app.init() {
-            panic!("Failed to init application");
+            return Err(VSomeIpError::ApplicationInitError);
         }
 
-        app
+        Ok(app)
     }
     pub fn create_payload(&self) -> Payload {
         let inner = unsafe { self.inner.create_payload() };

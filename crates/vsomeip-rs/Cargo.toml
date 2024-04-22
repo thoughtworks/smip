@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 cxx = { version = "1.0", features = ["default", "c++17"] }
 vsomeip-sys = {path = "./vsomeip-sys"}
-
+thiserror = "1"
