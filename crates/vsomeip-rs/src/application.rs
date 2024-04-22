@@ -36,6 +36,9 @@ impl Application {
     pub fn stop_offer_service(&self, service_id: ServiceId, instance_id: InstanceId, major_version: MajorVersion, minor_version: MinorVersion) {
         unsafe { vsomeip_sys::application::stop_offer_service(self.pin_mut(), service_id, instance_id, major_version, minor_version) }
     }
+    pub fn request_service(&self, service_id: ServiceId, instance_id: InstanceId, major_version: MajorVersion, minor_version: MinorVersion) {
+        unsafe { vsomeip_sys::application::request_service(self.pin_mut(), service_id, instance_id, major_version, minor_version) }
+    }
     pub fn release_service(&self, service_id: ServiceId, instance_id: InstanceId) {
         unsafe { vsomeip_sys::application::release_service(self.pin_mut(), service_id, instance_id) }
     }
@@ -51,11 +54,9 @@ impl Application {
             (f)(&message);
         });
 
-
         unsafe { 
             vsomeip_sys::application_register_message_handler(self.pin_mut(), service_id, instance_id, method_id, message_callback.f, message_callback.user_data as *mut _); 
         }
-
     }
     pub fn register_state_handler<F: FnMut(State) + 'static>(&self, mut f: F) {
         let state_callback = vsomeip_sys::StateHandlerCallback::from_closure(move |raw_state| {
@@ -84,6 +85,9 @@ impl Application {
     }
     pub fn unregister_state_handler(&self) {
         unsafe { vsomeip_sys::application::unregister_state_handler(self.pin_mut()); }
+    }
+    pub fn unregister_availability_handler(&self, service_id: ServiceId, instance_id: InstanceId, major_version: MajorVersion, minor_version: MinorVersion) {
+        unsafe { vsomeip_sys::application::unregister_availability_handler(self.pin_mut(), service_id, instance_id, major_version, minor_version); }
     }
     pub fn clear_all_handlers(&self) {
         unsafe { vsomeip_sys::application::clear_all_handler(self.pin_mut())}
