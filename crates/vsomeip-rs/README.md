@@ -4,7 +4,7 @@ Rust bindings to [vsomeip](https://github.com/COVESA/vsomeip)
 
 
 ### vsomeip-sys
-This is the low-level binding to the vsomeip library. It is a direct mapping of the C API to Rust. This crate is not intended to be used directly by the user. It is used by the `vsomeip-rs` crate to provide a safe and idiomatic Rust API to the user.
+This is the low-level binding to the vsomeip library. It is a direct mapping of the C++ API to Rust. This crate is not intended to be used directly by the user. It is used by the `vsomeip-rs` crate to provide a safe and idiomatic Rust API to the user.
 
 ### vsomeip-rs
 This is the high-level binding to the vsomeip library. It provides a safe and idiomatic Rust API to the user. This crate is intended to be used by the user to interact with the vsomeip library.
