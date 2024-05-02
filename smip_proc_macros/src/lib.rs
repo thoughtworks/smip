@@ -49,6 +49,6 @@ pub fn service(args: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn methods_impl(_args: TokenStream, item: TokenStream) -> TokenStream {
     let impl_block = syn::parse_macro_input!(item as syn::ItemImpl);
-    methods::expand_methods_impl(impl_block);
-    todo!()
+    methods::expand_methods_impl(impl_block).unwrap_or_else(|e| TokenStream::from(e.into_compile_error()).into())
+    .into()
 }

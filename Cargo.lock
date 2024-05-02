@@ -888,6 +888,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "smip_core",
+ "someip_types",
  "syn 2.0.60",
 ]
 

@@ -14,3 +14,4 @@ darling = "0.20"
 proc-macro2 = "1"
 
 smip_core = {path = "../smip_core"}
+someip_types = {path = "../someip_types"}

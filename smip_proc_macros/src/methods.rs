@@ -1,36 +1,40 @@
 use proc_macro2::TokenStream;
-use syn::{spanned::Spanned, ImplItemFn};
+use someip_types::MethodId;
+use syn::{parse_quote, spanned::Spanned, ImplItemFn, Meta};
 use quote::quote;
 
-pub fn expand_methods_impl(impl_block: syn::ItemImpl) -> syn::Result<TokenStream> {
+pub fn expand_methods_impl(mut impl_block: syn::ItemImpl) -> syn::Result<TokenStream> {
     check_valid_impl(&impl_block)?;
 
+    let mut methods = Vec::new();
     
-    for item in &impl_block.items {
+    for item in &mut impl_block.items {
         match item {
             syn::ImplItem::Fn(method) => {
-                
                 check_valid_method(method)?;
+                if let Some(attr_ix) = extract_method_attr(method) {
+                    let attribute = method.attrs.remove(attr_ix);
+                    method.attrs.push(parse_quote!(#[allow(unused)]));
 
-                let method_name = &method.sig.ident;
-                let method_block = &method.block;
-                let method_vis = &method.vis;
-                let method_sig = &method.sig;
-                let method_block = &method.block;
-                let method_block = quote! {
-                    #method_vis #method_sig {
-                        #method_block
-                    }
-                };
-                println!("method_name: {:?}", method_name);
-                println!("method_block: {:?}", method_block);
+                    let method_id = extract_method_id(&attribute.meta)?;
+                    methods.push((method, method_id));
+
+                } else {
+                    continue;
+                }
             }
             _ => {
                 return Err(syn::Error::new(item.span(), "only methods are allowed in methods_impl"));
             }
         }
     }
-    todo!()
+
+    // let derived_service_methods_impl = derive_service_methods(&impl_block, &methods)?;
+
+    Ok(quote!(
+        #impl_block
+        // derived_service_methods_impl
+    ))
 }
 
 fn check_valid_impl(impl_block: &syn::ItemImpl) -> syn::Result<()> {
@@ -69,4 +73,53 @@ fn check_valid_method(method: &ImplItemFn) -> syn::Result<()> {
     }
 
     Ok(())
+}
+
+fn extract_method_attr(method: &ImplItemFn) -> Option<usize> {
+    for (ix, attr) in method.attrs.iter().enumerate() {
+        let meta = &attr.meta;
+        let path = meta.path();
+
+        if path.is_ident("smip_method") {
+            return Some(ix);
+        }
+    }
+
+    None
+}
+fn extract_method_id(meta: &Meta) -> syn::Result<MethodId> {
+    match meta {
+        Meta::List(meta) => {
+            let meta: Meta = meta.parse_args()?;
+            match meta {
+                Meta::NameValue(meta) => {
+                    meta.path.get_ident().map_or(Err(syn::Error::new(meta.span(), "expected id")), |ident| {
+                        let id = ident.to_string();
+                        if id != "id" {
+                            return Err(syn::Error::new(meta.span(), "expected id"));
+                        }
+                        
+                        match &meta.value {
+                            syn::Expr::Lit(syn::ExprLit{lit, ..}) => {
+                                match lit {
+                                    syn::Lit::Int(int) => {
+                                        let id = int.base10_parse::<u16>()?;
+                                        Ok(id)
+                                    },
+                                    _ => Err(syn::Error::new(meta.span(), "method id should be a number"))
+                                }
+                            },
+                            _ => return Err(syn::Error::new(meta.span(), "method id should be a number"))
+                        }
+                    })
+                },
+                _ => Err(syn::Error::new(meta.span(), "expected #[smip_method(id = xyzw)] to set method id"))
+            }
+        },
+        _ => Err(syn::Error::new(meta.span(), "expected #[smip_method(id = xyzw)] to set method id"))
+    }
+}
+
+fn derive_service_methods(impl_block: &syn::ItemImpl, methods: &[(&ImplItemFn, MethodId)] ) -> syn::Result<TokenStream> {
+    todo!()
 }
