@@ -8,8 +8,10 @@ For example:
 
 #[smip::service(id = 0x1234, major_version = 1, minor_version = 0)]
 pub struct MyService {
+    foo: u32
 }
 
+#[smip::methods_impl]
 impl MyService {
     #[smip::method(id = 0x5678)]
     pub fn method(&self, arg1: u32, arg2: u32) -> u32 {
@@ -33,7 +35,7 @@ pub fn main() {
 The macros desugar to this kind of code:
 
 ```rust
-pub trait Service {
+pub trait Service: Send {
     fn service_id(&self) -> u16;
     fn major_version(&self) -> u8;
     fn minor_version(&self) -> u8;
