@@ -8,8 +8,11 @@ edition = "2021"
 [workspace]
 resolver = "2"
 
-members = ["smip_core"]
+members = ["smip_core", "smip_proc_macros", "someip_types"]
 
 
 [dependencies]
-smip_core = { path = "smip_core" }
+smip_core = {path = "smip_core" }
+# smip_al = { path = "smip_al" }
+smip_proc_macros = {path = "smip_proc_macros"}
+someip_types = {path = "someip_types"}
