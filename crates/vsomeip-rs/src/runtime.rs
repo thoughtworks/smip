@@ -34,6 +34,24 @@ impl Runtime {
 
         Ok(app)
     }
+    pub fn create_application_with(&self, name: impl AsRef<str>, pre_init: impl FnOnce(&Application)) -> Result<Application, VSomeIpError> {
+        let name = name.as_ref();
+        let_cxx_string!(name_cxx = name);
+        let application = unsafe { vsomeip_sys::runtime::create_application(self.pin_mut(), &name_cxx) }; 
+
+        let app = Application {
+            inner: application,
+        };
+
+        (pre_init)(&app);
+
+        if !app.init() {
+            return Err(VSomeIpError::ApplicationInitError);
+        }
+
+        Ok(app)
+    }
+
     pub fn create_payload(&self) -> Payload {
         let inner = unsafe { self.inner.create_payload() };
 
