@@ -9,3 +9,6 @@ edition = "2021"
 parking_lot = "0.12"
 someip_types = {path = "../someip_types"}
 vsomeip-rs = {git = "ssh://git@github.com/tw-sdv/vsomeip-rs"}
+serde = "1"
+bincode = "1"
+anyhow = "1"

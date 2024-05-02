@@ -50,7 +50,10 @@ impl Runtime {
                 
                 app.register_message_handler(service_id, instance_id, method.id, move|message| {
                     let mut service = service_clone.lock();
-                    (method.f)(&mut service, &app_clone, &message);
+                    let result = (method.f)(&mut service, &app_clone, &message);
+                    if let Err(err) = result {
+                        println!("{}", err);
+                    }
                 });
             }
         };

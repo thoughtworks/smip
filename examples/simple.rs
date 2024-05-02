@@ -6,8 +6,9 @@ struct MyService {
 #[smip::methods_impl]
 impl MyService {
     #[smip_method(id = 1)]
-    fn foo(&self, x: u32) {
-        println!("foo {}", x);
+    fn add(&mut self, value: u32) {
+        self.x += value;
+        println!("foo {}", self.x);
     }
     #[smip_method(id = 2)]
     fn bar(&self, y: bool) -> String {

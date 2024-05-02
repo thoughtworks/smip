@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use someip_types::MethodId;
-use syn::{parse_quote, spanned::Spanned, ImplItemFn, Meta};
+use syn::{parse_quote, spanned::Spanned, ImplItemFn, Meta, ReturnType, Type};
 use quote::quote;
 
 pub fn expand_methods_impl(mut impl_block: syn::ItemImpl) -> syn::Result<TokenStream> {
@@ -17,7 +17,7 @@ pub fn expand_methods_impl(mut impl_block: syn::ItemImpl) -> syn::Result<TokenSt
                     method.attrs.push(parse_quote!(#[allow(unused)]));
 
                     let method_id = extract_method_id(&attribute.meta)?;
-                    methods.push((method, method_id));
+                    methods.push((&*method, method_id));
 
                 } else {
                     continue;
@@ -29,12 +29,17 @@ pub fn expand_methods_impl(mut impl_block: syn::ItemImpl) -> syn::Result<TokenSt
         }
     }
 
-    // let derived_service_methods_impl = derive_service_methods(&impl_block, &methods)?;
+    let ty = &*impl_block.self_ty;
 
-    Ok(quote!(
+    let derived_service_methods_impl = derive_service_methods(ty, &methods)?;
+
+    let output = quote!(
         #impl_block
-        // derived_service_methods_impl
-    ))
+        
+        #derived_service_methods_impl
+    );
+
+    Ok(output)
 }
 
 fn check_valid_impl(impl_block: &syn::ItemImpl) -> syn::Result<()> {
@@ -120,6 +125,54 @@ fn extract_method_id(meta: &Meta) -> syn::Result<MethodId> {
     }
 }
 
-fn derive_service_methods(impl_block: &syn::ItemImpl, methods: &[(&ImplItemFn, MethodId)] ) -> syn::Result<TokenStream> {
-    todo!()
+fn derive_service_methods(service_name: &Type, methods: &[(&ImplItemFn, MethodId)] ) -> syn::Result<TokenStream> {
+    let methods = methods.iter().map(|(method, method_id)| {
+        let method_name = &method.sig.ident;
+        let method_id = *method_id;
+        let return_type = &method.sig.output;
+        let arg = &method.sig.inputs[1];
+
+        match return_type {
+            ReturnType::Default => quote!(
+                builder.add_method(#method_id, |service, app, message| {
+                    let payload = message.get_payload();
+                    let arg = ::smip::FromPayload::from_payload(payload.get_data())?;
+                    service.#method_name(arg);
+                    Ok(())
+                });
+            ),
+            
+            ReturnType::Type(_, _) => quote!(
+                builder.add_method(#method_id, |service, app, message| {
+                    let payload = message.get_payload();
+                    let arg = ::smip::FromPayload::from_payload(payload.get_data())?;
+                    let result = service.#method_name(arg);
+
+                    let result_payload = ::smip::ToPayload::to_payload(&result)?;
+
+                    let mut response = ::smip::Message::response(message);
+                    response.set_payload(&::smip::Payload::with_data(&result_payload));
+                    app.send(&response);
+
+                    Ok(())
+                });
+            )
+        }
+    });
+
+    let mut stream = TokenStream::new();
+
+    for method in methods {
+        stream.extend(method);
+    }
+
+    Ok(
+        quote!(
+            impl ::smip::ServiceMethods for #service_name {
+                fn register_methods(builder: &mut ::smip::MethodsBuilder<#service_name>) {
+                    #stream
+                }
+            }
+        )
+    )
 }
