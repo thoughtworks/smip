@@ -21,13 +21,6 @@ impl Dashboard {
         let mut rng = rand::thread_rng();
         rng.gen_range(10..151)
     }
-
-    // #[smip_method(id = 0x4444)]
-    // fn time(&mut self, request: i32) -> String {
-    //     dbg!(request);
-
-    //     "12:00:00".to_string()
-    // }
 }
 
 fn main() {
