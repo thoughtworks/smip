@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 serde = { version = "1", features = ["derive"], optional = true}
+vsomeip-rs = {git = "ssh://git@github.com/tw-sdv/vsomeip-rs"}
 
 [features]
 default = []
