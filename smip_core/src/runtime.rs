@@ -52,6 +52,7 @@ impl Runtime {
                     let mut service = service_clone.lock();
                     let result = (method.f)(&mut service, &app_clone, &message);
                     if let Err(err) = result {
+                        //FIXME: Send error response
                         println!("{}", err);
                     }
                 });

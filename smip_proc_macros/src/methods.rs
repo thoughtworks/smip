@@ -11,8 +11,8 @@ pub fn expand_methods_impl(mut impl_block: syn::ItemImpl) -> syn::Result<TokenSt
     for item in &mut impl_block.items {
         match item {
             syn::ImplItem::Fn(method) => {
-                check_valid_method(method)?;
                 if let Some(attr_ix) = extract_method_attr(method) {
+                    check_valid_method(method)?;
                     let attribute = method.attrs.remove(attr_ix);
                     method.attrs.push(parse_quote!(#[allow(unused)]));
 
@@ -130,7 +130,6 @@ fn derive_service_methods(service_name: &Type, methods: &[(&ImplItemFn, MethodId
         let method_name = &method.sig.ident;
         let method_id = *method_id;
         let return_type = &method.sig.output;
-        let arg = &method.sig.inputs[1];
 
         match return_type {
             ReturnType::Default => quote!(
