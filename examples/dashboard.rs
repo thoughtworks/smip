@@ -1,5 +1,3 @@
-use std::ffi::CString;
-
 use rand::Rng;
 use smip::{methods_impl, service};
 use smip_core::Runtime;

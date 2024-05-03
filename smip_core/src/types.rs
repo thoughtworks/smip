@@ -21,9 +21,9 @@ impl<S: ServiceDefinition> MethodsBuilder<S> {
     }
 }
 pub trait ServiceDefinition: Send + Sync + 'static {
-    fn id(&self) -> ServiceId;
-    fn major_version(&self) -> MajorVersion;
-    fn minor_version(&self) -> MinorVersion;
+    fn id() -> ServiceId;
+    fn major_version() -> MajorVersion;
+    fn minor_version() -> MinorVersion;
 }
 
 pub trait ServiceMethods {

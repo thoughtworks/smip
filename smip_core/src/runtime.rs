@@ -25,9 +25,9 @@ impl Runtime {
     pub fn service<S: ServiceDefinition + ServiceMethods>(mut self, service: S) -> Self {
         let mut builder = MethodsBuilder { methods: vec![] };
 
-        let service_id = service.id();
-        let major_version = service.major_version();
-        let minor_version = service.minor_version();
+        let service_id = S::id();
+        let major_version = S::major_version();
+        let minor_version = S::minor_version();
 
         S::register_methods(&mut builder);
 

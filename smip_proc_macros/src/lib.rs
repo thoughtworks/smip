@@ -33,13 +33,13 @@ pub fn service(args: TokenStream, item: TokenStream) -> TokenStream {
 
         #[automatically_derived]
         impl ::smip::ServiceDefinition for #struct_name {
-            fn id(&self) -> ::smip::ServiceId {
+            fn id() -> ::smip::ServiceId {
                 #id
             }
-            fn major_version(&self) -> ::smip::MajorVersion {
+            fn major_version() -> ::smip::MajorVersion {
                 #major_version
             }
-            fn minor_version(&self) -> ::smip::MinorVersion {
+            fn minor_version() -> ::smip::MinorVersion {
                 #minor_version
             }
         }
