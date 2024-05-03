@@ -1,3 +1,4 @@
+use bincode::Options;
 use serde::{Deserialize, Serialize};
 use someip_types::*;
 
@@ -31,7 +32,12 @@ pub trait ServiceMethods {
 
 pub trait FromPayload<'de>: Deserialize<'de> {
     fn from_payload(payload: &'de [u8]) -> Result<Self, bincode::Error> {
-        bincode::deserialize(payload)
+        let mut de = bincode::Deserializer::from_slice(
+            payload,
+            bincode::options().with_fixint_encoding().allow_trailing_bytes(),
+        );
+
+        Self::deserialize(&mut de)
     }
 }
 
