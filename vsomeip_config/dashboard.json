@@ -1,0 +1,40 @@
+{
+    "unicast": "172.31.43.55",
+    "netmask": "255.255.240.0",
+    "logging": {
+        "level": "debug",
+        "console": "true",
+        "file": {
+            "enable": "false",
+            "path": "/tmp/vsomeip.log"
+        },
+        "dlt": "false"
+    },
+    "applications": [
+        {
+            "name": "Dashboard",
+            "id": "0x1313"
+        },
+        {
+            "name" : "hello_world_client",
+            "id": "0x1212"
+        }
+    ],
+    "services": [
+        {
+            "service": "0x1111",
+            "instance": "0x2222",
+            "unreliable": 30509,
+            "reliable": {
+                "port": 30509,
+                "enable-magic-cookie": "false"
+            },
+            "unicast": "172.31.43.55"
+        }
+    ],
+    "routing": "Dashboard",
+    "service-discovery" :
+    {
+        "enable" : "false"
+    }
+}
