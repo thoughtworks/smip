@@ -22,11 +22,9 @@ impl Dashboard {
 }
 
 fn main() {
-    let config = smip::RuntimeConfig {
-        name: "Dashboard".to_string(),
-        instance_id: 0x2222,
-    };
-    let application = Runtime::new(config).service(Dashboard::new());
+    let config = smip::RuntimeConfig::new("Dashboard", 0x1313, 0x2222);
+
+    let application = Runtime::new(config).service(Dashboard::new(), 30509);
 
     let _ = application.run();
 }

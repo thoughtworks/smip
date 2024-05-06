@@ -8,7 +8,7 @@ edition = "2021"
 [workspace]
 resolver = "2"
 
-members = ["smip_core", "smip_proc_macros", "someip_types"]
+members = ["smip_core", "smip_proc_macros", "someip_types", "vsomeip_compat"]
 
 
 [dependencies]
