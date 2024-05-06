@@ -125,7 +125,6 @@ impl Runtime {
 
         let config_str = self.vsomeip_config.build();
         
-        println!("{config_str}");
         let app = vsomeip_rs::Runtime::get().create_application_with(self.config.name, |_app| {
             set_vsomeip_config(&config_str);
         })?;

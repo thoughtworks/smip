@@ -78,6 +78,7 @@ impl VsomeIpConfig {
             json["routing"] = json!(routing);
         }
 
+        println!("{}", serde_json::to_string_pretty(&json).unwrap());
         json.to_string()
     } 
 }
