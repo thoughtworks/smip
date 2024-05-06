@@ -6,7 +6,6 @@ use darling::ast::NestedMeta;
 use service::ServiceArgs;
 use proc_macro::TokenStream;
 use syn::ItemStruct;
-use quote::quote;
 
 #[proc_macro_attribute]
 pub fn service(args: TokenStream, item: TokenStream) -> TokenStream {
@@ -22,28 +21,7 @@ pub fn service(args: TokenStream, item: TokenStream) -> TokenStream {
         Err(e) => { return TokenStream::from(e.write_errors()); }
     };
 
-    let struct_name = struct_def.ident.clone();
-
-    let id = args.id;
-    let major_version = args.major_version;
-    let minor_version = args.minor_version;
-    
-    quote!(
-        #struct_def 
-
-        #[automatically_derived]
-        impl ::smip::ServiceDefinition for #struct_name {
-            fn id() -> ::smip::ServiceId {
-                #id
-            }
-            fn major_version() -> ::smip::MajorVersion {
-                #major_version
-            }
-            fn minor_version() -> ::smip::MinorVersion {
-                #minor_version
-            }
-        }
-    ).into()
+    service::expand_service_impl(&struct_def, args).into()
 }
 
 #[proc_macro_attribute]

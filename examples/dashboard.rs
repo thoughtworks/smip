@@ -2,7 +2,7 @@ use rand::Rng;
 use smip::{methods_impl, service};
 use smip_core::Runtime;
 
-#[service(id = 0x1111, major_version = 0, minor_version = 0)]
+#[service(id = 0x1111)]
 struct Dashboard {}
 
 impl Dashboard {
