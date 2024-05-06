@@ -47,6 +47,7 @@ impl Runtime {
         
         vsomeip_config.app_id = (config.name.clone(), config.id);
         vsomeip_config.instance_id = config.instance_id;
+        vsomeip_config.routing = Some(config.name.clone());
 
         Self {
             config,

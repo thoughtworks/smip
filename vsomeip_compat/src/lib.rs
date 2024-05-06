@@ -1,6 +1,7 @@
 
 use std::{io::Write, net::{IpAddr, Ipv4Addr}};
 
+use serde_json::json;
 use vsomeip_rs::{ServiceId, InstanceId};
 use tempfile::NamedTempFile;
 
@@ -12,7 +13,8 @@ pub struct VsomeIpConfig {
     pub netmask: IpAddr,
     pub addr_mode: AddressingMode,
     pub service_discovery: bool,   
-    pub instance_id: InstanceId 
+    pub instance_id: InstanceId,
+    pub routing: Option<String>,
 }
 
 impl VsomeIpConfig {
@@ -25,63 +27,58 @@ impl VsomeIpConfig {
             netmask: IpAddr::V4(Ipv4Addr::new(255, 255, 255, 0)),
             addr: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
             instance_id: 0,
+            routing: None
         }
-    }
-    fn build_services(&self, instance_id: InstanceId) -> String {
-        let mut services = String::new();
-        
-        services.push_str("\"services\": [");
-        for service in &self.services {
-            services.push_str("{");
-            services.push_str(&format!("\"service\": \"{}\", ", service.id));
-            services.push_str(&format!("\"instance\": \"{}\", ", instance_id));
-            
-            match service.conn_type {
-                ConnectionType::Tcp(port) => {
-                    services.push_str("\"reliable\": {");
-                    services.push_str(&format!("\"port\": {}, ", port));
-                    services.push_str("\"enable-magic-cookie\": \"false\"");
-                    services.push_str("}");
-                    
-                },
-                ConnectionType::Udp(port) => {
-                    services.push_str(&format!("\"unreliable\": {}", port));
-                },
-            }
-            services.push(',');
-            services.push_str(&self.build_addr_mode());
-            services.push_str("}");
-        }
-        services.push_str("]");
-        services
     }
     fn build_addr_mode(&self) -> String {
         match self.addr_mode {
-            AddressingMode::Unicast => format!("\"unicast\": \"{}\"", self.addr),
-            AddressingMode::Multicast => format!("\"multicast\": \"{}\"", self.addr),
+            AddressingMode::Unicast => "unicast".into(),
+            AddressingMode::Multicast => "multicast".into(),
         }
     }
     pub fn build(self) -> String {
         let addr_mode = self.build_addr_mode();
-        let net_mask = format!("\"netmask\": \"{}\"", self.netmask);
+        let addr_mode = addr_mode.as_str();
+        let mut json = json!({
+            addr_mode: self.addr,
+            "netmask": self.netmask,
+            "logging": {
+                "level": "debug",
+                "console": true,
+                "file": {
+                    "enable": false,
+                    "path": "/tmp/vsomeip.log",
+                },
+                "dlt": false,
+            },
+            "applications": [{
+                "name": self.app_id.0,
+                "id": self.app_id.1.to_string(),
+            }],
+            "services": self.services.iter().map(move |service| {
+                json!({
+                    "service": service.id.to_string(),
+                    "instance": self.instance_id.to_string(),
+                    "reliable": {
+                        "port": match service.conn_type {
+                            ConnectionType::Tcp(port) => port,
+                            ConnectionType::Udp(port) => port,
+                        },
+                        "enable-magic-cookie": false,
+                    },
+                    addr_mode: self.addr,
+                })
+            }).collect::<Vec<_>>(),
+            "service-discovery": {
+                "enable": self.service_discovery,
+            },
+        });
 
-        let logging = "\"logging\": {\"level\": \"debug\", \"console\": \"true\", \"file\": {\"enable\": \"false\", \"path\": \"/tmp/vsomeip.log\"}, \"dlt\": \"false\"}";
-        let services = self.build_services(self.instance_id);
-        let service_discovery = format!("\"service-discovery\": {{\"enable\": \"{}\"}}", self.service_discovery);
+        if let Some(routing) = self.routing {
+            json["routing"] = json!(routing);
+        }
 
-        let applications = format!("\"applications\": [{{\"name\": \"{}\", \"id\": \"{}\"}}, {{\"name\": \"{}\", \"id\": \"{}\"}}]", self.app_id.0, self.app_id.1, "hello_world_client", "0x1212");
-        let routing = format!("\"routing\": \"{}\"", self.app_id.0);
-
-        format!("
-        {{
-            {addr_mode},
-            {net_mask},
-            {logging},
-            {applications},
-            {services},
-            {routing},
-            {service_discovery}
-        }}")
+        json.to_string()
     } 
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -117,4 +114,125 @@ pub fn set_vsomeip_config(config: &str) {
     println!("Wrote vsomeip config to {}", config_path.display());
 
     std::env::set_var("VSOMEIP_CONFIGURATION", config_path);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_service_config() {
+        let config = VsomeIpConfig {
+            app_id: ("smip_app".to_string(), 1),
+            services: vec![
+                VSomeIpServiceConfig {
+                    id: 2,
+                    conn_type: ConnectionType::Tcp(30509)
+                }
+            ],
+            service_discovery: false,
+            addr_mode: AddressingMode::Unicast,
+            netmask: IpAddr::V4(Ipv4Addr::new(255, 255, 255, 0)),
+            addr: IpAddr::V4(Ipv4Addr::new(192, 168, 0, 23)),
+            instance_id: 3,
+            routing: None
+        };
+
+        let actual = config.build();
+
+        let expected = r#"
+        {
+            "unicast": "192.168.0.23",
+            "netmask": "255.255.255.0",
+            "logging": {
+                "level": "debug",
+                "console": true,
+                "file": {
+                "enable": false,
+                "path": "/tmp/vsomeip.log"
+                },
+                "dlt": false
+            },
+            "applications": [{"name": "smip_app", "id": "1"}],
+            "services": [
+            {
+                "service": "2",
+                "instance": "3", 
+                "reliable": { "port": 30509, "enable-magic-cookie": false},
+                "unicast": "192.168.0.23"
+            }
+            ],
+            "service-discovery": {"enable": false}
+        }
+        "#;
+    
+        let actual_json: serde_json::Value = serde_json::from_str(&actual).unwrap();
+        let expected_json: serde_json::Value = serde_json::from_str(expected).unwrap();
+
+        assert_eq!(actual_json, expected_json);
+
+    }
+
+    #[test]
+    fn test_config_with_service_discovery() {
+        let config = VsomeIpConfig {
+            app_id: ("smip_app".to_string(), 1),
+            services: vec![
+                VSomeIpServiceConfig {
+                    id: 2,
+                    conn_type: ConnectionType::Tcp(30509)
+                }
+            ],
+            service_discovery: true,
+            addr_mode: AddressingMode::Unicast,
+            netmask: IpAddr::V4(Ipv4Addr::new(255, 255, 255, 0)),
+            addr: IpAddr::V4(Ipv4Addr::new(192, 168, 0, 23)),
+            instance_id: 3,
+            routing: None
+        };
+
+        let actual = config.build();
+
+        let expected = r#"
+        {
+            "applications": [
+              {
+                "id": "1",
+                "name": "smip_app"
+              }
+            ],
+            "logging": {
+              "console": true,
+              "dlt": false,
+              "file": {
+                "enable": false,
+                "path": "/tmp/vsomeip.log"
+              },
+              "level": "debug"
+            },
+            "netmask": "255.255.255.0",
+            "service-discovery": {
+              "enable": true
+            },
+            "services": [
+              {
+                "instance": "3",
+                "reliable": {
+                  "enable-magic-cookie": false,
+                  "port": 30509
+                },
+                "service": "2",
+                "unicast": "192.168.0.23"
+              }
+            ],
+            "unicast": "192.168.0.23"
+          }
+          "#;
+
+        let actual_json: serde_json::Value = serde_json::from_str(&actual).unwrap();
+        let expected_json: serde_json::Value = serde_json::from_str(expected).unwrap();
+
+        assert_eq!(actual_json, expected_json);
+
+    }
 }
