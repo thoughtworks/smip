@@ -6,6 +6,7 @@ use crate::types::*;
 
 pub struct Client {
     application: Application,
+    join_handle: Option<std::thread::JoinHandle<()>>,
     receiver: mpsc::Receiver<(ServiceId, InstanceId, MethodId, Payload)>,
 }
 
@@ -14,7 +15,7 @@ impl Client {
         let runtime = Runtime::get();
 
         let config_str = config.clone().build();
-        let application = runtime.create_application_with(&config.app_id.0, |app| {
+        let application = runtime.create_application_with(&config.app_id.0, |_app| {
             set_vsomeip_config(&config_str);
         })?;
 
@@ -32,9 +33,10 @@ impl Client {
         });
 
         let application_clone = application.clone();
-        std::thread::spawn(move || application_clone.start());
+        let join_handle = std::thread::spawn(move || application_clone.start());
         Ok(Self {
             application,
+            join_handle: Some(join_handle),
             receiver
         })
     }
@@ -65,5 +67,6 @@ impl Client {
 impl Drop for Client {
     fn drop(&mut self) {
         self.application.stop();
+        self.join_handle.take().unwrap().join().unwrap();
     }
 }
