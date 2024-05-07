@@ -22,7 +22,7 @@ impl VsomeIpConfig {
         Self {
             app_id: ("smip_app".to_string(), 0),
             services: vec![],
-            service_discovery: false,
+            service_discovery: true,
             addr_mode: AddressingMode::Unicast,
             netmask: IpAddr::V4(Ipv4Addr::new(255, 255, 255, 0)),
             addr: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
