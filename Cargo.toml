@@ -16,6 +16,7 @@ smip_core = {path = "smip_core" }
 # smip_al = { path = "smip_al" }
 smip_proc_macros = {path = "smip_proc_macros"}
 someip_types = {path = "someip_types"}
+vsomeip_compat = {path = "vsomeip_compat"}
 
 [dev-dependencies]
 rand = "0.8.4"

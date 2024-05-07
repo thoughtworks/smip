@@ -22,7 +22,7 @@ impl VsomeIpConfig {
         Self {
             app_id: ("smip_app".to_string(), 0),
             services: vec![],
-            service_discovery: true,
+            service_discovery: false,
             addr_mode: AddressingMode::Unicast,
             netmask: IpAddr::V4(Ipv4Addr::new(255, 255, 255, 0)),
             addr: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
@@ -30,6 +30,37 @@ impl VsomeIpConfig {
             routing: None
         }
     }
+
+    pub fn application_id(mut self, app_id: (String, u16)) -> Self {
+        self.app_id = app_id;
+        self
+    }
+
+    pub fn service_discovery(mut self, enable: bool) -> Self {
+        self.service_discovery = enable;
+        self
+    }
+    
+    pub fn service(mut self, service: VSomeIpServiceConfig) -> Self {
+        self.services.push(service);
+        self
+    }
+
+    pub fn addr(mut self, addr: IpAddr) -> Self {
+        self.addr = addr;
+        self
+    }
+
+    pub fn netmask(mut self, netmask: IpAddr) -> Self {
+        self.netmask = netmask;
+        self
+    }
+
+    pub fn instance_id(mut self, instance_id: InstanceId) -> Self {
+        self.instance_id = instance_id;
+        self
+    }
+
     fn build_addr_mode(&self) -> String {
         match self.addr_mode {
             AddressingMode::Unicast => "unicast".into(),
@@ -59,6 +90,10 @@ impl VsomeIpConfig {
                 json!({
                     "service": service.id.to_string(),
                     "instance": self.instance_id.to_string(),
+                    "unreliable": match service.conn_type {
+                        ConnectionType::Tcp(port) => port,
+                        ConnectionType::Udp(port) => port,
+                    },
                     "reliable": {
                         "port": match service.conn_type {
                             ConnectionType::Tcp(port) => port,
