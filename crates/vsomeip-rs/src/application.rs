@@ -7,6 +7,9 @@ pub struct Application {
     pub(crate) inner: SharedPtr<vsomeip_sys::application>,
 }
 
+unsafe impl Send for Application {}
+unsafe impl Sync for Application {}
+
 unsafe impl AsPinMut for Application {
     type Inner = vsomeip_sys::application;
 
