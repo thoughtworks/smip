@@ -1,3 +1,4 @@
+use chrono::TimeZone;
 use rand::Rng;
 use smip::{methods_impl, service};
 use smip_core::Runtime;
@@ -18,6 +19,17 @@ impl Dashboard {
         dbg!(request);
         let mut rng = rand::thread_rng();
         rng.gen_range(10..151)
+    }
+
+    #[smip_method(id = 0x4444)]
+    fn time(&self, request: ()) -> String {
+        // Get the current time in UTC
+        let utc_time = chrono::Utc::now();
+
+    // Convert UTC time to Indian Standard Time (IST)
+    let time = utc_time.with_timezone(&chrono::FixedOffset::east_opt(5*3600 + 30*60).unwrap());
+
+    format!("{:?}", time.format("%H:%M:%S").to_string())
     }
 }
 

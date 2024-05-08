@@ -20,3 +20,4 @@ vsomeip_compat = {path = "vsomeip_compat"}
 
 [dev-dependencies]
 rand = "0.8.4"
+chrono = "0.4"

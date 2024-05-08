@@ -151,6 +151,7 @@ fn derive_service_methods(service_name: &Type, methods: &[(&ImplItemFn, MethodId
 
                     let mut response = ::smip::Message::response(message);
                     response.set_payload(&::smip::Payload::with_data(&result_payload));
+                    println!("Sending response");
                     app.send(&response);
 
                     Ok(())

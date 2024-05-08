@@ -90,10 +90,6 @@ impl VsomeIpConfig {
                 json!({
                     "service": service.id.to_string(),
                     "instance": self.instance_id.to_string(),
-                    "unreliable": match service.conn_type {
-                        ConnectionType::Tcp(port) => port,
-                        ConnectionType::Udp(port) => port,
-                    },
                     "reliable": {
                         "port": match service.conn_type {
                             ConnectionType::Tcp(port) => port,
