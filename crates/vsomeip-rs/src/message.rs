@@ -7,6 +7,9 @@ pub struct Message {
     pub(crate) inner: SharedPtr<vsomeip_sys::message>
 }
 
+unsafe impl Send for Message {}
+unsafe impl Sync for Message {}
+
 unsafe impl AsPinMut for Message {
     type Inner = vsomeip_sys::message;
 
