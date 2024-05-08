@@ -1,3 +1,5 @@
+use smip::Runtime;
+
 #[smip::service(id = 0x1234, major_version = 1, minor_version = 0)]
 struct MyService {
     x: u32
@@ -6,14 +8,23 @@ struct MyService {
 #[smip::methods_impl]
 impl MyService {
     #[smip_method(id = 1)]
-    fn add(&mut self, value: u32) {
+    fn add(&mut self, value: u32) -> u32 {
         self.x += value;
-        println!("foo {}", self.x);
+
+        self.x
     }
     #[smip_method(id = 2)]
-    fn bar(&self, y: bool) -> String {
-        format!("bar {}", y)
+    fn hello(&self, y: ()) -> String {
+        "Hello World".into()
     }
 }
-pub fn main() {
+fn main() {
+    let config = smip::RuntimeConfig::new("Simple", 0xABCD, 0x1);
+
+    let application = Runtime::new(config).service(
+        MyService {
+        x: 0
+    }, 30509);
+
+    let _ = application.run();
 }

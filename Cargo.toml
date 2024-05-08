@@ -19,5 +19,7 @@ someip_types = {path = "someip_types"}
 vsomeip_compat = {path = "vsomeip_compat"}
 
 [dev-dependencies]
-rand = "0.8.4"
+rand = "0.8"
 chrono = "0.4"
+noise = "0.9"
+
