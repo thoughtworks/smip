@@ -3,8 +3,10 @@ use std::{net::{IpAddr, ToSocketAddrs}, sync::Arc};
 
 use parking_lot::Mutex;
 use someip_types::InstanceId;
-use vsomeip_rs::{State, VSomeIpError};
+use vsomeip_rs::{ReturnCode, State, VSomeIpError};
 use vsomeip_compat::*;
+
+use self::error::SmipError;
 
 #[derive(Debug, Clone)]
 pub struct RuntimeConfig {
@@ -55,6 +57,33 @@ impl Runtime {
             vsomeip_config,
         }
     }
+    fn handle_response(application: &Application, request: &Message, result: Result<Option<Message>, SmipError>) {
+        match result {
+            Ok(response) => {
+                response.map(|response| application.send(&response));
+            },
+            Err(err) => {
+                match err {
+                    SmipError::FromPayloadError(bincode_err) => {
+                        let mut response = Message::response(request);
+                        response.set_return_code(ReturnCode::MalformedMessage);
+                        
+                        println!("{}", bincode_err);
+
+                        application.send(&response);
+                    },
+                    SmipError::ToPayloadError(bincode_err) => {
+                        let mut response = Message::response(request);
+                        response.set_return_code(ReturnCode::NotOk);
+                        
+                        println!("{}", bincode_err);
+
+                        application.send(&response);
+                    },
+                }
+            }
+        }
+    }
     pub fn service<S: ServiceDefinition + ServiceMethods>(mut self, service: S, port: u16) -> Self {
         let mut builder = MethodsBuilder { methods: vec![] };
 
@@ -86,14 +115,11 @@ impl Runtime {
                 let service_clone = service.clone();
                 let app_clone = app.clone();
 
-                app.register_message_handler(service_id, instance_id, method.id, move |message| {
+                app.register_message_handler(service_id, instance_id, method.id, move |request| {
                     let mut service = service_clone.lock();
-                    let result = (method.f)(&mut service, &app_clone, &message);
+                    let result = (method.f)(&mut service, &request);
 
-                    if let Err(err) = result {
-                        //FIXME: Send error response
-                        dbg!("{}", err);
-                    }
+                    Self::handle_response(&app_clone, &request, result)
                 });
             }
         };

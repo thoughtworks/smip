@@ -1159,6 +1159,7 @@ dependencies = [
  "parking_lot",
  "serde",
  "someip_types",
+ "thiserror",
  "vsomeip-rs",
  "vsomeip_compat",
 ]

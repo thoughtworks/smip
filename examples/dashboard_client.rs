@@ -7,7 +7,6 @@ fn main() -> Result<(), Box<dyn Error>>{
 
     let service_id = 0x1111;
     let instance_id = 0x2222;
-    let method_id = 0x3333;
 
 
     let vsomeip_config = smip::VsomeIpConfig::new()
@@ -32,11 +31,11 @@ fn main() -> Result<(), Box<dyn Error>>{
     let client = Client::new(&vsomeip_config)?;
 
     loop {
-        let response: i32 = client.send(method_id, 233)?;
-        dbg!(response);
+        let speed: i32 = client.send(0x3333, ())?;
+        println!("Speed: {}", speed);
         
-        let response: String = client.send(0x4444, ())?;
-        println!("{}", response);
+        let battery: u8 = client.send(0x4444, ())?;
+        println!("Battery: {}", battery);
 
         std::thread::sleep(std::time::Duration::from_millis(500));
     }

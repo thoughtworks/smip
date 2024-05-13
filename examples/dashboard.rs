@@ -46,9 +46,9 @@ impl BatterySensor {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Indicator {
-    Off,
+    Off = 0,
     Left,
     Right,
     Hazard,
@@ -79,8 +79,10 @@ impl Dashboard {
         self.battery.value()
     }
     #[smip_method(id = 0x5555)]
-    fn indicator(&self, request: ()) -> String {
-        format!("{:?}", self.indicator)
+    fn indicator(&self, request: ()) -> i32 {
+        format!("{:?}", self.indicator);
+
+        self.indicator as i32
     }
 }
 

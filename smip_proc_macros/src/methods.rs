@@ -133,16 +133,16 @@ fn derive_service_methods(service_name: &Type, methods: &[(&ImplItemFn, MethodId
 
         match return_type {
             ReturnType::Default => quote!(
-                builder.add_method(#method_id, |service, app, message| {
+                builder.add_method(#method_id, |service, message| {
                     let payload = message.get_payload();
                     let arg = ::smip::FromPayload::from_payload(payload.get_data())?;
                     service.#method_name(arg);
-                    Ok(())
+                    Ok(None)
                 });
             ),
             
             ReturnType::Type(_, _) => quote!(
-                builder.add_method(#method_id, |service, app, message| {
+                builder.add_method(#method_id, |service, message| {
                     let payload = message.get_payload();
                     let arg = ::smip::FromPayload::from_payload(payload.get_data())?;
                     let result = service.#method_name(arg);
@@ -151,10 +151,8 @@ fn derive_service_methods(service_name: &Type, methods: &[(&ImplItemFn, MethodId
 
                     let mut response = ::smip::Message::response(message);
                     response.set_payload(&::smip::Payload::with_data(&result_payload));
-                    println!("Sending response");
-                    app.send(&response);
 
-                    Ok(())
+                    Ok(Some(response))
                 });
             )
         }

@@ -2,11 +2,13 @@ use bincode::Options;
 use serde::{Deserialize, Serialize};
 use someip_types::*;
 
+use crate::error::SmipError;
+
 pub type Message = vsomeip_rs::Message;
 pub type Application = vsomeip_rs::Application;
 pub type Payload = vsomeip_rs::Payload;
 
-pub type RequestCallback<S> = fn(&mut S, &Application, &Message) -> anyhow::Result<()>;
+pub type RequestCallback<S> = fn(&mut S, &Message) -> Result<Option<Message>, SmipError>;
 pub(crate) struct Method<S> {
     pub id: MethodId,
     pub f: RequestCallback<S>
@@ -31,20 +33,20 @@ pub trait ServiceMethods {
 }
 
 pub trait FromPayload<'de>: Deserialize<'de> {
-    fn from_payload(payload: &'de [u8]) -> Result<Self, bincode::Error> {
+    fn from_payload(payload: &'de [u8]) -> Result<Self, SmipError> {
         let mut de = bincode::Deserializer::from_slice(
             payload,
             bincode::options().with_fixint_encoding().allow_trailing_bytes(),
         );
 
-        Self::deserialize(&mut de)
+        Self::deserialize(&mut de).map_err(|err| SmipError::FromPayloadError(err))
     }
 }
 
 
 pub trait ToPayload: Serialize {
-    fn to_payload(&self) -> Result<Vec<u8>, bincode::Error> {
-        bincode::serialize(self)
+    fn to_payload(&self) -> Result<Vec<u8>, SmipError> {
+        bincode::serialize(self).map_err(|err| SmipError::ToPayloadError(err))
     }
 }
 
