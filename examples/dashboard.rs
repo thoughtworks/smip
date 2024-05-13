@@ -71,15 +71,15 @@ impl Dashboard {
         }
     }
     #[smip_method(id = 0x3333)]
-    fn speed(&mut self, request: ()) -> u32 {
+    fn speed(&mut self) -> u32 {
         self.speed_sensor.value()
     }
     #[smip_method(id = 0x4444)]
-    fn battery(&mut self, request: ()) -> u8 {
+    fn battery(&mut self) -> u8 {
         self.battery.value()
     }
     #[smip_method(id = 0x5555)]
-    fn indicator(&self, request: ()) -> i32 {
+    fn indicator(&self) -> i32 {
         format!("{:?}", self.indicator);
 
         self.indicator as i32

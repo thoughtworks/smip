@@ -72,8 +72,18 @@ fn check_valid_method(method: &ImplItemFn) -> syn::Result<()> {
         return Err(syn::Error::new(method.sig.generics.where_clause.span(), "where clauses in method are not supported"));
     }
 
-    // method should have exactly one argument
-    if method.sig.inputs.len() != 2 {
+    // Check if the first argument of this method is self
+    let first_arg = method.sig.inputs.first();
+    if let Some(syn::FnArg::Receiver(_)) = first_arg {
+        // First argument is self
+    } else {
+        return Err(syn::Error::new(method.sig.inputs.span(), "method should have self as the first argument"));
+    }
+
+    let n_args = method.sig.inputs.len();
+
+    // method should have zero or one arguments other than self
+    if !(n_args == 1 || n_args == 2)  {
         return Err(syn::Error::new(method.sig.inputs.span(), "method should have exactly one arguments"));
     }
 
@@ -131,31 +141,51 @@ fn derive_service_methods(service_name: &Type, methods: &[(&ImplItemFn, MethodId
         let method_id = *method_id;
         let return_type = &method.sig.output;
 
-        match return_type {
-            ReturnType::Default => quote!(
-                builder.add_method(#method_id, |service, message| {
-                    let payload = message.get_payload();
-                    let arg = ::smip::FromPayload::from_payload(payload.get_data())?;
-                    service.#method_name(arg);
-                    Ok(None)
-                });
-            ),
-            
-            ReturnType::Type(_, _) => quote!(
-                builder.add_method(#method_id, |service, message| {
-                    let payload = message.get_payload();
-                    let arg = ::smip::FromPayload::from_payload(payload.get_data())?;
-                    let result = service.#method_name(arg);
+        let is_getter = method.sig.inputs.len() == 1;
+        let has_return_type = matches!(return_type, ReturnType::Type(_, _));
 
-                    let result_payload = ::smip::ToPayload::to_payload(&result)?;
+        let parse_request_payload = quote!(
+            let payload = message.get_payload();
+            let arg = ::smip::FromPayload::from_payload(payload.get_data())?;
+        );
 
-                    let mut response = ::smip::Message::response(message);
-                    response.set_payload(&::smip::Payload::with_data(&result_payload));
+        let call_method = if is_getter {
+                quote!( 
+                    let output = service.#method_name(); 
+                )
+        } else {
+                quote!( 
+                    #parse_request_payload
+                    let output = service.#method_name(arg); 
+                )
+        };
 
-                    Ok(Some(response))
-                });
+        
+        let write_response_payload = quote!(
+            let result_payload = ::smip::ToPayload::to_payload(&output)?;
+
+            let mut response = ::smip::Message::response(message);
+            response.set_payload(&::smip::Payload::with_data(&result_payload));
+
+        );
+
+        let return_message = if has_return_type {
+            quote!(
+                #write_response_payload
+                Ok(Some(response))
+            ) 
+        } else {
+            quote!(
+                Ok(None)
             )
-        }
+        };
+
+        quote!(
+            builder.add_method(#method_id, |service, message| {   
+                #call_method
+                #return_message
+            });
+        )
     });
 
     let mut stream = TokenStream::new();

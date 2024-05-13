@@ -2,7 +2,7 @@ use smip::Runtime;
 
 #[smip::service(id = 0x1234, major_version = 1, minor_version = 0)]
 struct MyService {
-    x: u32
+    x: u32,
 }
 
 #[smip::methods_impl]
@@ -14,7 +14,7 @@ impl MyService {
         self.x
     }
     #[smip_method(id = 2)]
-    fn hello(&self, y: ()) -> String {
+    fn hello(&self) -> String {
         "Hello World".into()
     }
 }
