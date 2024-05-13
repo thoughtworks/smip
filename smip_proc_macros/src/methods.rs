@@ -1,5 +1,6 @@
 use proc_macro2::TokenStream;
 use someip_types::MethodId;
+use std::collections::HashMap;
 use syn::{parse_quote, spanned::Spanned, ImplItemFn, Meta, ReturnType, Type};
 use quote::quote;
 
@@ -8,16 +9,26 @@ pub fn expand_methods_impl(mut impl_block: syn::ItemImpl) -> syn::Result<TokenSt
 
     let mut methods = Vec::new();
     
+    let mut method_id_to_name = HashMap::new();
+
     for item in &mut impl_block.items {
         match item {
             syn::ImplItem::Fn(method) => {
                 if let Some(attr_ix) = extract_method_attr(method) {
                     check_valid_method(method)?;
+                    
                     let attribute = method.attrs.remove(attr_ix);
                     method.attrs.push(parse_quote!(#[allow(unused)]));
-
+                    
                     let method_id = extract_method_id(&attribute.meta)?;
+
+                    if let Some(method_name) = method_id_to_name.get(&method_id) {
+                        return Err(syn::Error::new(method.sig.ident.span(), format!("method id {} is already used by method {}", method_id, method_name)));
+                    }
+
                     methods.push((&*method, method_id));
+
+                    method_id_to_name.insert(method_id, method.sig.ident.to_string());
 
                 } else {
                     continue;
