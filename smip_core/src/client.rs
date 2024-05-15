@@ -1,10 +1,10 @@
 use std::{sync::{mpsc, Arc}, thread};
 
-use crate::types::*;
+use crate::{error::SmipError, types::*};
 use parking_lot::{Condvar, Mutex};
 use vsomeip_compat::{set_vsomeip_config, VsomeIpConfig};
 use vsomeip_rs::{
-    Application, InstanceId, MessageType, MethodId, Runtime, ServiceId, ANY_INSTANCE, ANY_METHOD, ANY_SERVICE
+    Application, InstanceId, MessageType, MethodId, Runtime, ServiceId, ANY_METHOD
 };
 
 pub struct Client {
@@ -82,7 +82,7 @@ impl Client {
     });
 
 
-    application.register_availability_handler(service_id, instance_id, move |service, instance, is_available| {
+    application.register_availability_handler(service_id, instance_id, move |_service, _instance, _is_available| {
         let &(ref lock, ref cvar) = &*pair_clone;
         let mut started = lock.lock();
         *started = true;
