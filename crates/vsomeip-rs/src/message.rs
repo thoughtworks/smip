@@ -7,6 +7,25 @@ pub struct Message {
     pub(crate) inner: SharedPtr<vsomeip_sys::message>
 }
 
+impl Clone for Message {
+    fn clone(&self) -> Self {
+        let mut cloned = Message::new(self.is_reliable());
+        
+        cloned.set_service(self.get_service());
+        cloned.set_instance(self.get_instance());
+        cloned.set_client(self.get_client());
+        cloned.set_session(self.get_session());
+        cloned.set_interface_version(self.get_interface_version());
+        cloned.set_method(self.get_method());
+        cloned.set_return_code(self.get_return_code());
+        cloned.set_message_type(self.get_message_type());
+        cloned.set_payload(&self.get_payload());
+
+        cloned
+    }
+
+}
+
 unsafe impl Send for Message {}
 unsafe impl Sync for Message {}
 
@@ -70,6 +89,10 @@ impl Message {
         let message_type = unsafe { vsomeip_sys::message_base::get_message_type(&message_base) };
         message_type.into()
     }
+    pub fn is_reliable(&self) -> bool {
+        let message_base = unsafe { vsomeip_sys::as_message_base(&self.inner) };
+        unsafe { vsomeip_sys::message_base::is_reliable(&message_base) }
+    }
     pub fn get_payload(&self) -> Payload {
         let payload = unsafe { self.inner.get_payload() };
 
@@ -120,6 +143,11 @@ impl Message {
         let message_base = unsafe { vsomeip_sys::as_message_base(&self.inner) };
         let pin_mut = unsafe { util::shared_to_pin(&message_base) };
         unsafe { vsomeip_sys::message_base::set_return_code(pin_mut, return_code.into()) };
+    }
+    pub fn set_reliable(&mut self, reliable: bool) {
+        let message_base = unsafe { vsomeip_sys::as_message_base(&self.inner) };
+        let pin_mut = unsafe { util::shared_to_pin(&message_base) };
+        unsafe { vsomeip_sys::message_base::set_reliable(pin_mut, reliable) };
     }
     pub fn set_payload(&mut self, payload: &Payload) {
         unsafe { vsomeip_sys::message::set_payload(self.pin_mut(), payload.inner.clone()) };
