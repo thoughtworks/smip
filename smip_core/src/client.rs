@@ -103,14 +103,14 @@ pub fn send<T: ToPayload, R: for<'a> FromPayload<'a>>(
     &self,
     method_id: MethodId,
     data: T,
-) -> anyhow::Result<R> {
+) -> Result<R, SmipError> {
         let mut message = Message::request(true);
 
         message.set_service(self.service_id);
         message.set_instance(self.instance_id);
         message.set_method(method_id);
 
-        let payload = Payload::with_data(&data.to_payload().unwrap());
+        let payload = Payload::with_data(&data.to_payload()?);
 
         message.set_payload(&payload);
 
@@ -119,11 +119,11 @@ pub fn send<T: ToPayload, R: for<'a> FromPayload<'a>>(
 
         for (s_id, i_id, m_id, p) in self.message_receiver.iter() {
             if s_id == self.service_id && i_id == self.instance_id && m_id == method_id {
-                return Ok(R::from_payload(p.get_data())?);
+                return R::from_payload(p.get_data());
             }
         }
 
-        Err(anyhow::anyhow!("No response received"))
+        Err(SmipError::NoResponse)
     }
 }
 

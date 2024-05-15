@@ -80,6 +80,7 @@ impl Runtime {
 
                         application.send(&response);
                     },
+                    SmipError::NoResponse => unreachable!(),
                 }
             }
         }
