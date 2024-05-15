@@ -915,6 +915,7 @@ name = "vsomeip-rs"
 version = "0.1.0"
 dependencies = [
  "cxx",
+ "serde",
  "thiserror",
  "vsomeip-sys",
 ]

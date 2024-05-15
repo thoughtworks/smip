@@ -9,3 +9,8 @@ edition = "2021"
 cxx = { version = "1.0", features = ["default", "c++17"] }
 vsomeip-sys = {path = "./vsomeip-sys"}
 thiserror = "1"
+
+serde ={ version = "1", features = ["derive"], optional = true }
+
+[features]
+serde = ["dep:serde"]

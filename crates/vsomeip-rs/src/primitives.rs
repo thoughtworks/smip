@@ -16,6 +16,7 @@ pub type DiagnosisId = vsomeip_sys::diagnosis_t;
 pub type EventGroupId = vsomeip_sys::eventgroup_t;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum State {
     Registered,
     Deregistered
@@ -39,6 +40,7 @@ impl From<State> for vsomeip_sys::state_type_e {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ReturnCode {
     Ok,
     NotOk,
@@ -93,6 +95,7 @@ impl From<ReturnCode> for vsomeip_sys::return_code_e {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MessageType {
     Request,
     RequestNoReturn,
