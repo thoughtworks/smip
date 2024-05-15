@@ -10,7 +10,7 @@ use vsomeip_rs::{
 pub struct Client {
     application: Application,
     join_handle: Option<std::thread::JoinHandle<()>>,
-    message_receiver: mpsc::Receiver<(ServiceId, InstanceId, MethodId, Payload)>,
+    message_receiver: mpsc::Receiver<Message>,
     message_sender: mpsc::Sender<Message>,
     service_id: ServiceId,
     instance_id: InstanceId
@@ -25,8 +25,7 @@ impl Client {
         }
 
         for message in message_receiver.iter() {
-            // println!("New message to send {:?} {:?}", message.get_message_type(), message.get_payload().get_data());
-            // println!("{} {} | {} {}", service, instance, message.get_service(), message.get_instance());
+
             if message.get_service() == service && message.get_instance() == instance {
                 application.send(&message);
             }
@@ -53,16 +52,9 @@ impl Client {
             instance_id,
             ANY_METHOD,
             move |message| {
-                // println!("New Message");
                 if message.get_message_type() == MessageType::Response {
-                    // println!("New Response");
-                    let service_id = message.get_service();
-                    let instance_id = message.get_instance();
-                    let method_id = message.get_method();
-                    let payload = message.get_payload();
-
                     sender
-                        .send((service_id, instance_id, method_id, payload))
+                        .send(message.clone())
                         .unwrap();
                 }
             },
@@ -114,12 +106,23 @@ pub fn send<T: ToPayload, R: for<'a> FromPayload<'a>>(
 
         message.set_payload(&payload);
 
+        let response = self.send_raw(message)?;
+        let response_payload = response.get_payload();
+        
+        return R::from_payload(response_payload.get_data());
+    }
+    pub fn send_raw(&self, message: Message) -> Result<Message, SmipError> {
+        let req_method_id = message.get_method();
         self.application.send(&message);
         self.message_sender.send(message).unwrap();
 
-        for (s_id, i_id, m_id, p) in self.message_receiver.iter() {
-            if s_id == self.service_id && i_id == self.instance_id && m_id == method_id {
-                return R::from_payload(p.get_data());
+        for message in self.message_receiver.iter() {
+            let service_id = message.get_service();
+            let instance_id = message.get_instance();
+            let method_id = message.get_method();
+
+            if service_id == self.service_id && instance_id == self.instance_id && method_id == req_method_id {
+                return Ok(message);
             }
         }
 
