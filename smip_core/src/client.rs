@@ -116,17 +116,28 @@ pub fn send<T: ToPayload, R: for<'a> FromPayload<'a>>(
         self.application.send(&message);
         self.message_sender.send(message).unwrap();
 
-        for message in self.message_receiver.iter() {
-            let service_id = message.get_service();
-            let instance_id = message.get_instance();
-            let method_id = message.get_method();
-
-            if service_id == self.service_id && instance_id == self.instance_id && method_id == req_method_id {
-                return Ok(message);
+        const RESPONSE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(3);
+        
+        loop {
+            let result = self.message_receiver.recv_timeout(RESPONSE_TIMEOUT);
+        
+            match result {
+                Ok(message) => {
+                    let service_id = message.get_service();
+                    let instance_id = message.get_instance();
+                    let method_id = message.get_method();
+        
+                    if service_id == self.service_id && instance_id == self.instance_id && method_id == req_method_id {
+                        return Ok(message);
+                    } else {
+                        continue;
+                    }
+                },
+                Err(_timeout) => {
+                    return Err(SmipError::NoResponse);
+                }
             }
         }
-
-        Err(SmipError::NoResponse)
     }
 }
 
