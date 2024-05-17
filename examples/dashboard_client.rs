@@ -16,6 +16,7 @@ fn main() -> Result<(), Box<dyn Error>>{
         .service(smip::VSomeIpServiceConfig {
             id: service_id,
             conn_type: smip::ConnectionType::Udp(30509),
+            ..Default::default()
         })
         // .service(
         //     smip::VSomeIpServiceConfig {

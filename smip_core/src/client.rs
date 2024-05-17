@@ -46,6 +46,8 @@ impl Client {
     assert!(config.services.len() == 1);
     let service_id = config.services[0].id;
     let instance_id = config.instance_id;
+    let major_version = config.services[0].major_version;
+    let minor_version = config.services[0].minor_version;
     
         application.register_message_handler(
             service_id,
@@ -61,7 +63,7 @@ impl Client {
         );
     let application_clone1 = application.clone();
 
-    application.request_service(service_id, instance_id, 0, 0);
+    application.request_service(service_id, instance_id, major_version, minor_version);
 
     let pair = Arc::new((Mutex::new(false), Condvar::new()));
 
@@ -79,7 +81,7 @@ impl Client {
         let mut started = lock.lock();
         *started = true;
         cvar.notify_one();
-    }, 0, 0);
+    }, major_version, minor_version);
 
     let join_handle = std::thread::spawn(move || application_clone.start());
     Ok(Self {

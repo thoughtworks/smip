@@ -99,6 +99,7 @@ impl Runtime {
         self.vsomeip_config.services.push(VSomeIpServiceConfig {
             id: service_id, 
             conn_type: ConnectionType::Tcp(port),
+            ..Default::default()
         });
 
         let creator = move |app: &vsomeip_rs::Application, instance_id: InstanceId| {

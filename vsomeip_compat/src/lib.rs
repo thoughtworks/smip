@@ -2,7 +2,7 @@
 use std::{io::Write, net::{IpAddr, Ipv4Addr}};
 
 use serde_json::json;
-use vsomeip_rs::{ServiceId, InstanceId};
+use vsomeip_rs::{InstanceId, MajorVersion, MinorVersion, ServiceId};
 use tempfile::NamedTempFile;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -129,6 +129,19 @@ pub enum AddressingMode {
 pub struct VSomeIpServiceConfig {
     pub id: ServiceId,
     pub conn_type: ConnectionType,
+    pub major_version: MajorVersion,
+    pub minor_version: MinorVersion
+}
+impl Default for VSomeIpServiceConfig {
+    fn default() -> Self {
+        Self {
+            id: 0,
+            conn_type: ConnectionType::Tcp(30509),
+            major_version: 0,
+            minor_version: 0
+        }
+    
+    }
 }
 
 pub fn set_vsomeip_config(config: &str) {
@@ -159,7 +172,8 @@ mod tests {
             services: vec![
                 VSomeIpServiceConfig {
                     id: 2,
-                    conn_type: ConnectionType::Tcp(30509)
+                    conn_type: ConnectionType::Tcp(30509),
+                    ..Default::default()
                 }
             ],
             service_discovery: false,
@@ -212,7 +226,8 @@ mod tests {
             services: vec![
                 VSomeIpServiceConfig {
                     id: 2,
-                    conn_type: ConnectionType::Tcp(30509)
+                    conn_type: ConnectionType::Tcp(30509),
+                    ..Default::default()
                 }
             ],
             service_discovery: true,
