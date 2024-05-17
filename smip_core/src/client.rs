@@ -7,27 +7,41 @@ use vsomeip_rs::{
     Application, InstanceId, MessageType, MethodId, Runtime, ServiceId, ANY_METHOD
 };
 
+enum MessageCommand {
+    SendMessage(Message),
+    ReceiveMessage(Message),
+    Exit
+}
 pub struct Client {
     application: Application,
     join_handle: Option<std::thread::JoinHandle<()>>,
-    message_receiver: mpsc::Receiver<Message>,
-    message_sender: mpsc::Sender<Message>,
+    message_receiver: mpsc::Receiver<MessageCommand>,
+    message_sender: mpsc::Sender<MessageCommand>,
     service_id: ServiceId,
     instance_id: InstanceId
 }
 
 impl Client {
-    fn sender_thread(pair: Arc<(Mutex<bool>, Condvar)>, message_receiver: mpsc::Receiver<Message>, service: ServiceId, instance: InstanceId, application: Application){
+    fn sender_thread(pair: Arc<(Mutex<bool>, Condvar)>, message_receiver: mpsc::Receiver<MessageCommand>, service: ServiceId, instance: InstanceId, application: Application){
         let &(ref lock, ref cvar) = &*pair;
         let mut started = lock.lock();
         if !*started {
             cvar.wait(&mut started);
         }
 
-        for message in message_receiver.iter() {
-
-            if message.get_service() == service && message.get_instance() == instance {
-                application.send(&message);
+        for command in message_receiver.iter() {
+            match command {
+                MessageCommand::SendMessage(message) => {  
+                    if message.get_service() == service && message.get_instance() == instance {
+                        application.send(&message);
+                    }
+                },
+                MessageCommand::Exit => {
+                    break;
+                },
+                _=> {
+                    unreachable!("Unexpected message")
+                }
             }
         }
     }
@@ -40,14 +54,14 @@ impl Client {
         })?;
 
         let (sender, receiver) = mpsc::channel();
-        let (message_sender, message_receiver) = mpsc::channel::<Message>();
+        let (message_sender, message_receiver) = mpsc::channel::<MessageCommand>();
 
 
-    assert!(config.services.len() == 1);
-    let service_id = config.services[0].id;
-    let instance_id = config.instance_id;
-    let major_version = config.services[0].major_version;
-    let minor_version = config.services[0].minor_version;
+        assert!(config.services.len() == 1);
+        let service_id = config.services[0].id;
+        let instance_id = config.instance_id;
+        let major_version = config.services[0].major_version;
+        let minor_version = config.services[0].minor_version;
     
         application.register_message_handler(
             service_id,
@@ -56,7 +70,7 @@ impl Client {
             move |message| {
                 if message.get_message_type() == MessageType::Response {
                     sender
-                        .send(message.clone())
+                        .send(MessageCommand::ReceiveMessage(message.clone()))
                         .unwrap();
                 }
             },
@@ -116,7 +130,7 @@ pub fn send<T: ToPayload, R: for<'a> FromPayload<'a>>(
     pub fn send_raw(&self, message: Message) -> Result<Message, SmipError> {
         let req_method_id = message.get_method();
         self.application.send(&message);
-        self.message_sender.send(message).unwrap();
+        self.message_sender.send(MessageCommand::SendMessage(message)).unwrap();
 
         const RESPONSE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(3);
         
@@ -124,7 +138,7 @@ pub fn send<T: ToPayload, R: for<'a> FromPayload<'a>>(
             let result = self.message_receiver.recv_timeout(RESPONSE_TIMEOUT);
         
             match result {
-                Ok(message) => {
+                Ok(MessageCommand::ReceiveMessage(message)) => {
                     let service_id = message.get_service();
                     let instance_id = message.get_instance();
                     let method_id = message.get_method();
@@ -138,6 +152,9 @@ pub fn send<T: ToPayload, R: for<'a> FromPayload<'a>>(
                 Err(_timeout) => {
                     return Err(SmipError::NoResponse);
                 }
+                _=> {
+                    unreachable!("Unexpected message")
+                },
             }
         }
     }
@@ -146,6 +163,7 @@ pub fn send<T: ToPayload, R: for<'a> FromPayload<'a>>(
 impl Drop for Client {
     fn drop(&mut self) {
         self.application.stop();
+        self.message_sender.send(MessageCommand::Exit).unwrap();
         self.join_handle.take().unwrap().join().unwrap();
     }
 }
