@@ -14,7 +14,8 @@ enum MessageCommand {
 }
 pub struct Client {
     application: Application,
-    join_handle: Option<std::thread::JoinHandle<()>>,
+    sender_join: Option<std::thread::JoinHandle<()>>,
+    app_join: Option<std::thread::JoinHandle<()>>,
     message_receiver: mpsc::Receiver<MessageCommand>,
     message_sender: mpsc::Sender<MessageCommand>,
     service_id: ServiceId,
@@ -37,7 +38,8 @@ impl Client {
                     }
                 },
                 MessageCommand::Exit => {
-                    break;
+                    println!("Recieved exit command");
+                    return;
                 },
                 _=> {
                     unreachable!("Unexpected message")
@@ -85,7 +87,7 @@ impl Client {
     
     
     let application_clone = application.clone();
-    thread::spawn(move || {
+    let sender_join = thread::spawn(move || {
         Self::sender_thread(pair, message_receiver, service_id, instance_id, application_clone1);
     });
 
@@ -97,12 +99,13 @@ impl Client {
         cvar.notify_one();
     }, major_version, minor_version);
 
-    let join_handle = std::thread::spawn(move || application_clone.start());
+    let app_join = std::thread::spawn(move || application_clone.start());
     Ok(Self {
         application,
         service_id,
         instance_id,
-        join_handle: Some(join_handle),
+        sender_join: Some(sender_join),
+        app_join: Some(app_join),
         message_receiver: receiver,
         message_sender
     })
@@ -162,8 +165,13 @@ pub fn send<T: ToPayload, R: for<'a> FromPayload<'a>>(
 
 impl Drop for Client {
     fn drop(&mut self) {
-        self.application.stop();
+        self.application.clear_all_handlers();
+        self.application.release_service(self.service_id, self.instance_id);
         self.message_sender.send(MessageCommand::Exit).unwrap();
-        self.join_handle.take().unwrap().join().unwrap();
+        self.sender_join.take().unwrap().join().unwrap();
+        println!("Sender thread exited");
+        self.application.stop();
+        self.app_join.take().unwrap().join().unwrap();
+        println!("App thread exited");
     }
 }
