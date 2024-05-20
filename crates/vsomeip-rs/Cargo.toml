@@ -2,6 +2,8 @@
 name = "vsomeip-rs"
 version = "0.1.0"
 edition = "2021"
+authors = ["Atri Sarkar <atri.sarkar@thoughtworks.com>", "Gnana Ganesh <gnana.ganesh@thoughtworks.com>"]
+description = "Rust bindings for the vsomeip library"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
