@@ -1,3 +1,6 @@
+#![allow(unused_imports)]
+#![allow(clippy::missing_safety_doc)]
+
 use autocxx::prelude::*;
 #[allow(unused)]
 use cxx::*;
@@ -16,9 +19,6 @@ include_cpp! {
     generate!("vsomeip_v3::message_base")
     generate!("vsomeip_v3::payload")
     generate!("vsomeip_v3::state_type_e")
-    // What types and functions we want to generate
-    // generate_pod!("application")
-    // generate!("print_point")
 }
 
 #[cxx::bridge]

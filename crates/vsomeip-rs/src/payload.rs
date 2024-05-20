@@ -19,6 +19,12 @@ unsafe impl AsPinMut for Payload {
     }
 }
 
+impl Default for Payload {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Payload {
     /// Creates a new payload object.
     /// Shorthand for [`Runtime::get().create_payload()`](struct.Runtime.html#method.create_payload)
