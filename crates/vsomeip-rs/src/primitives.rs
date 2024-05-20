@@ -15,6 +15,7 @@ pub type InterfaceVersion = vsomeip_sys::interface_version_t;
 pub type DiagnosisId = vsomeip_sys::diagnosis_t;
 pub type EventGroupId = vsomeip_sys::eventgroup_t;
 
+/// The state of a SOME/IP service.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum State {
@@ -39,6 +40,8 @@ impl From<State> for vsomeip_sys::state_type_e {
     }
 }
 
+/// The return code of a SOME/IP message.
+/// SIP_RPC_371
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ReturnCode {
@@ -94,6 +97,8 @@ impl From<ReturnCode> for vsomeip_sys::return_code_e {
     }
 }
 
+/// The type of a SOME/IP message.
+/// SIP_RPC_684
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MessageType {
