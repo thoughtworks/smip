@@ -1,3 +1,8 @@
+//! The `vsomeip-rs` crate provides a Rust interface to the [vsomeip C++ library](https://github.com/covESA/vsomeip).
+//! Wrapper types are provided for the most important classes and functions.
+//! Currently only simple server client communication is supported.
+//! See the `simple_client_server` example for a demonstration of how to use the library.
+
 mod application;
 mod runtime;
 mod message;
