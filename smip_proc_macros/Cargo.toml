@@ -15,3 +15,7 @@ proc-macro2 = "1"
 
 smip_core = {path = "../smip_core"}
 someip_types = {path = "../someip_types"}
+
+[dev-dependencies]
+trybuild = "1.0"
+smip = { path = "../" }

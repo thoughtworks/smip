@@ -30,3 +30,13 @@ pub fn methods_impl(_args: TokenStream, item: TokenStream) -> TokenStream {
     methods::expand_methods_impl(impl_block).unwrap_or_else(|e| TokenStream::from(e.into_compile_error()).into())
     .into()
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn ui() {
+        let t = trybuild::TestCases::new();
+        t.compile_fail("tests/ui-fail/*.rs");
+        t.pass("tests/*.rs");
+    }
+}

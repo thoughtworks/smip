@@ -1,0 +1,5 @@
+error: expected #[smip_method(id = xyzw)] to set method id
+ --> tests/ui-fail/method-no-id.rs:8:7
+  |
+8 |     #[smip_method]
+  |       ^^^^^^^^^^^

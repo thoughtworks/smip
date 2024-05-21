@@ -1,0 +1,5 @@
+error: generics in method are not supported
+ --> tests/ui-fail/method-generic.rs:9:22
+  |
+9 |     fn generic_method<T>(&self, data: T) {}
+  |                      ^
