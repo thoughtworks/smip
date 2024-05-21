@@ -1,3 +1,6 @@
+#[cfg(target_os = "macos")]
+compile_error!("macOS is not supported yet");
+
 pub fn main() -> miette::Result<()> {
     // cxx_build::bridge("src/lib.rs")
     // .include("src")
