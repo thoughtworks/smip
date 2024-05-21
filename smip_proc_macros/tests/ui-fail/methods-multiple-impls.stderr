@@ -1,0 +1,10 @@
+error[E0119]: conflicting implementations of trait `ServiceMethods` for type `Service`
+  --> tests/ui-fail/methods-multiple-impls.rs:15:1
+   |
+9  | #[methods_impl]
+   | --------------- first implementation here
+...
+15 | #[methods_impl]
+   | ^^^^^^^^^^^^^^^ conflicting implementation for `Service`
+   |
+   = note: this error originates in the attribute macro `methods_impl` (in Nightly builds, run with -Z macro-backtrace for more info)
