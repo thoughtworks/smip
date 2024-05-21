@@ -8,15 +8,15 @@ edition = "2021"
 [workspace]
 resolver = "2"
 
-members = ["smip_core", "smip_proc_macros", "someip_types", "vsomeip_compat"]
+members = ["crates/smip_core", "crates/smip_proc_macros", "crates/someip_types", "crates/vsomeip_compat"]
 
 
 [dependencies]
-smip_core = {path = "smip_core" }
+smip_core = {path = "crates/smip_core" }
 # smip_al = { path = "smip_al" }
-smip_proc_macros = {path = "smip_proc_macros"}
-someip_types = {path = "someip_types"}
-vsomeip_compat = {path = "vsomeip_compat"}
+smip_proc_macros = {path = "crates/smip_proc_macros"}
+someip_types = {path = "crates/someip_types"}
+vsomeip_compat = {path = "crates/vsomeip_compat"}
 
 [dev-dependencies]
 rand = "0.8"
