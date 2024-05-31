@@ -114,7 +114,7 @@ cargo run --example simple
 ```
 In another terminal,
 ```bash
-cargo run --example simple_demo
+cargo run --example simple_client
 ```
 
 - You may need to set the `LD_LIBRARY_PATH` environment to a path that contains the vsomeip library as this is dynamically loaded `LD_LIBRARY_PATH=/usr/local/lib`
