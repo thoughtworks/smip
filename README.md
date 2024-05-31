@@ -63,12 +63,18 @@ struct MyService {
 
 #[smip::methods_impl]
 impl MyService {
+    // Method that adds whatever value it receives to x
+    // Expects u32 in request
+    // Returns u32 in response
     #[smip_method(id = 1)]
     fn add(&mut self, value: u32) -> u32 {
         self.x += value;
         self.x
     }
     
+    // Method that sends a string
+    // Expects nothing in request
+    // Returns String in response
     #[smip_method(id = 2)]
     fn hello(&self) -> String {
         "Hello World!".to_string()
@@ -87,7 +93,7 @@ fn main() {
 }
 ```
 
-A service is represented by a struct with a `service` attribute for providing its `id` and other metadata like the `major_version` (optional) and `minor_version` (optional). This struct will also hold all of the service's state. 
+A service is represented by a struct, `MyService` in this case, with a `service` attribute for providing its `id` and other metadata like the `major_version` (optional) and `minor_version` (optional). This struct will also hold all of the service's state. 
 
 SOME/IP methods are just rust methods with a special `smip_method` attribute to indicate its id. Whatever you pass as an argument to your method is parsed automatically from the payload, and whatever you return from it serialized into a response and sent back.
 All of these need to be in a special impl block marked with a `methods_impl` attribute for the framework to recognize them. 
@@ -95,6 +101,7 @@ All of these need to be in a special impl block marked with a `methods_impl` att
 A `Runtime` needs to be created using a `RuntimeConfig` which which take care of creating and running all of your services.
 
 After adding all your services to the `Runtime`, call `runtime.run()` to start all the services.
+
 # Aim
 
 Smip aims to be a SOME/IP framework and not an implementation of SOME/IP, so its not competing with [vSomeIP](https://github.com/COVESA/vsomeip) or [SommR](https://projects.eclipse.org/projects/automotive.sommr). Currently vSomeIP is used as the underlying implementation but this can be swapped with any compliant implementation in the future. 
