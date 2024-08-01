@@ -1,0 +1,19 @@
+[package]
+name = "vsomeip-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["Atri Sarkar <atri.sarkar@thoughtworks.com>", "Gnana Ganesh <gnana.ganesh@thoughtworks.com>"]
+description = "Rust bindings for the vsomeip library"
+keywords = ["vsomeip", "automotive", "ipc", "rust"]
+license = "Mozilla Public License 2.0"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cxx = { version = "1.0", features = ["default", "c++17"] }
+vsomeip-sys = {path = "./vsomeip-sys"}
+thiserror = "1"
+
+serde ={ version = "1", features = ["derive"], optional = true }
+
+[features]
+serde = ["dep:serde"]
