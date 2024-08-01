@@ -1,5 +1,5 @@
 
-use std::{io::Write, net::{IpAddr, Ipv4Addr}};
+use std::{io::Write, net::IpAddr};
 
 use serde_json::json;
 use vsomeip_rs::{InstanceId, MajorVersion, MinorVersion, ServiceId};
@@ -9,8 +9,8 @@ use tempfile::NamedTempFile;
 pub struct VsomeIpConfig {
     pub app_id: (String, u16),
     pub services: Vec<VSomeIpServiceConfig>,
-    pub addr: IpAddr,
-    pub netmask: IpAddr,
+    pub addr: Option<IpAddr>,
+    pub netmask: Option<IpAddr>,
     pub addr_mode: AddressingMode,
     pub service_discovery: bool,   
     pub instance_id: InstanceId,
@@ -24,8 +24,8 @@ impl VsomeIpConfig {
             services: vec![],
             service_discovery: false,
             addr_mode: AddressingMode::Unicast,
-            netmask: IpAddr::V4(Ipv4Addr::new(255, 255, 255, 0)),
-            addr: IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
+            netmask: None,
+            addr: None,
             instance_id: 0,
             routing: None
         }
@@ -47,12 +47,12 @@ impl VsomeIpConfig {
     }
 
     pub fn addr(mut self, addr: IpAddr) -> Self {
-        self.addr = addr;
+        self.addr = Some(addr);
         self
     }
 
     pub fn netmask(mut self, netmask: IpAddr) -> Self {
-        self.netmask = netmask;
+        self.netmask = Some(netmask);
         self
     }
 
@@ -67,12 +67,32 @@ impl VsomeIpConfig {
             AddressingMode::Multicast => "multicast".into(),
         }
     }
-    pub fn build(self) -> String {
+    fn set_addr(&mut self) {
+        if self.addr.is_some() && self.netmask.is_some() {
+                return;
+        }
+    
+        let default_iface = netdev::get_default_interface().expect("No default network interface found, please provide IP and netmask");
+            
+        if self.addr.is_none() {
+            self.addr = Some(default_iface.ipv4[0].addr.into());
+        }
+    
+        if self.netmask.is_none() {
+            self.netmask = Some(default_iface.ipv4[0].netmask().into());
+        }
+    }
+    pub fn build(mut self) -> String {
         let addr_mode = self.build_addr_mode();
         let addr_mode = addr_mode.as_str();
+
+        self.set_addr();
+        let addr = self.addr.unwrap();
+        let netmask = self.netmask.unwrap();
+
         let mut json = json!({
-            addr_mode: self.addr,
-            "netmask": self.netmask,
+            addr_mode: addr,
+            "netmask": netmask,
             "logging": {
                 "level": "debug",
                 "console": true,
@@ -163,6 +183,8 @@ pub fn set_vsomeip_config(config: &str) {
 
 #[cfg(test)]
 mod tests {
+    use std::net::Ipv4Addr;
+
     use super::*;
 
     #[test]
@@ -178,8 +200,8 @@ mod tests {
             ],
             service_discovery: false,
             addr_mode: AddressingMode::Unicast,
-            netmask: IpAddr::V4(Ipv4Addr::new(255, 255, 255, 0)),
-            addr: IpAddr::V4(Ipv4Addr::new(192, 168, 0, 23)),
+            netmask: Some(IpAddr::V4(Ipv4Addr::new(255, 255, 255, 0))),
+            addr: Some(IpAddr::V4(Ipv4Addr::new(192, 168, 0, 23))),
             instance_id: 3,
             routing: None
         };
@@ -232,8 +254,8 @@ mod tests {
             ],
             service_discovery: true,
             addr_mode: AddressingMode::Unicast,
-            netmask: IpAddr::V4(Ipv4Addr::new(255, 255, 255, 0)),
-            addr: IpAddr::V4(Ipv4Addr::new(192, 168, 0, 23)),
+            netmask: Some(IpAddr::V4(Ipv4Addr::new(255, 255, 255, 0))),
+            addr: Some(IpAddr::V4(Ipv4Addr::new(192, 168,0 ,23))),
             instance_id: 3,
             routing: None
         };

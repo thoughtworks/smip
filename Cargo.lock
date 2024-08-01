@@ -1186,7 +1186,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bincode",
- "netdev",
  "parking_lot",
  "serde",
  "someip_types",
@@ -1466,6 +1465,7 @@ dependencies = [
 name = "vsomeip_compat"
 version = "0.1.0"
 dependencies = [
+ "netdev",
  "serde_json",
  "tempfile",
  "vsomeip-rs",
