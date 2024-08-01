@@ -125,3 +125,8 @@ cargo run --example simple_client
 ```
 
 - You may need to set the `LD_LIBRARY_PATH` environment to a path that contains the vSomeIP library as this is dynamically loaded `LD_LIBRARY_PATH=/usr/local/lib`
+
+
+# License
+
+smip is licensed under [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0), check LICENSE.md for more information.
