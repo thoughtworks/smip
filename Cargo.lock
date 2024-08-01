@@ -1444,7 +1444,6 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 [[package]]
 name = "vsomeip-rs"
 version = "0.1.0"
-source = "git+ssh://git@github.com/tw-sdv/vsomeip-rs#26eb5ae8327f635671e4db100a95e796cbcb96e6"
 dependencies = [
  "cxx",
  "serde",
@@ -1455,7 +1454,6 @@ dependencies = [
 [[package]]
 name = "vsomeip-sys"
 version = "0.1.0"
-source = "git+ssh://git@github.com/tw-sdv/vsomeip-rs#26eb5ae8327f635671e4db100a95e796cbcb96e6"
 dependencies = [
  "autocxx",
  "autocxx-build",
