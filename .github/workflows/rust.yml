@@ -34,7 +34,7 @@ jobs:
            cd build
            # https://github.com/COVESA/vsomeip/issues/688
            # https://github.com/COVESA/vsomeip/issues/527
-           cmake -E env CXXFLAGS="-Wno-error=stringop-overflow" cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/usr -DCMAKE_BUILD_TYPE=Debugc
+           cmake -E env CXXFLAGS="-Wno-error=stringop-overflow" cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/usr -DCMAKE_BUILD_TYPE=Debug
            make -j
            sudo make install
            cd ../..
