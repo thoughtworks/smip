@@ -12,7 +12,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: fedora:40
+    container: fedora:38
 
     steps:
     - name: Setup cmake
@@ -29,6 +29,7 @@ jobs:
       run: |
            git clone https://github.com/COVESA/vsomeip
            cd vsomeip
+           git checkout cf497232adf84f55947f7a24e1b64e04b49f1f38
            mkdir build
            cd build
            # https://github.com/COVESA/vsomeip/issues/688
