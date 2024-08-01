@@ -10,5 +10,6 @@ edition = "2021"
 tempfile = "3"
 vsomeip-rs = {path = "../vsomeip-rs"}
 serde_json = "1"
+netdev = "0.25"
 
 [dev-dependencies]

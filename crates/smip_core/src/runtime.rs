@@ -130,27 +130,7 @@ impl Runtime {
 
         self
     }
-    fn set_addr(&mut self) -> Result<(), VSomeIpError> {
-
-        if self.config.addr.is_some() && self.config.netmask.is_some() {
-            return Ok(());
-        }
-
-        let default_iface = netdev::get_default_interface().expect("No default network interface found, please provide IP and netmask");
-        
-        if self.config.addr.is_none() {
-            self.vsomeip_config.addr = default_iface.ipv4[0].addr.into();
-        }
-
-        if self.config.netmask.is_none() {
-            self.vsomeip_config.netmask = default_iface.ipv4[0].netmask().into();
-        }
-
-        Ok(())
-    }
-    pub fn run(mut self) -> Result<(), VSomeIpError> {
-        self.set_addr()?;
-
+    pub fn run(self) -> Result<(), VSomeIpError> {
         let config_str = self.vsomeip_config.build();
         
         let app = vsomeip_rs::Runtime::get().create_application_with(self.config.name, |_app| {

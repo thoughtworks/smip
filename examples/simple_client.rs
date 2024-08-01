@@ -1,4 +1,3 @@
-use std::net::{IpAddr, Ipv4Addr};
 use std::error::Error;
 
 use smip::Client;
@@ -13,9 +12,7 @@ fn main() -> Result<(), Box<dyn Error>>{
             conn_type: smip::ConnectionType::Udp(30509),
             major_version: 1,
             minor_version: 0
-        })
-        .netmask(IpAddr::V4(Ipv4Addr::new(255, 255, 240, 0)))
-        .addr(IpAddr::V4(Ipv4Addr::new(172, 31, 43, 55)));
+        });
 
 
     let client = Client::new(&vsomeip_config)?;
