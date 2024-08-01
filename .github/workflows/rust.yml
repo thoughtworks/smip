@@ -11,10 +11,33 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    container: fedora:40
 
     steps:
+    - name: Setup cmake
+      run: sudo dnf -y install cmake 
+    - name: Install dependencies
+      run: sudo dnf -y install make git clang boost-devel nodejs
+
+    - name: Install latest stable Rust
+      uses: actions-rs/toolchain@v1
+      with:
+          toolchain: stable
+          
+    - name: Install vsomeip
+      run: |
+           git clone https://github.com/COVESA/vsomeip
+           cd vsomeip
+           mkdir build
+           cd build
+           # https://github.com/COVESA/vsomeip/issues/688
+           # https://github.com/COVESA/vsomeip/issues/527
+           cmake -E env CXXFLAGS="-Wno-error=stringop-overflow" cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/usr -DCMAKE_BUILD_TYPE=Debugc
+           make -j
+           sudo make install
+           cd ../..
+
     - uses: actions/checkout@v3
     - name: Build
       run: cargo build --workspace --all-features --verbose
