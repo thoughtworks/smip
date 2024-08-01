@@ -66,6 +66,10 @@ After adding all your services to the `Runtime`, call `runtime.run()` to start a
 
 ⚠️ **This is a highly experimental framework and doesn't support all of the features in SOME/IP**
 
+## Build
+
+**smip** requires a working installation of vsomeip, for more info refer to the **Install vsomeip** section of the [vsomeip-rs README](crates/vsomeip-rs/README.md).
+
 ## Run
 For a working demo see `examples/simple.rs` and `examples/simple_client.rs`:
 
