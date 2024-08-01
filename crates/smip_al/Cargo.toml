@@ -6,5 +6,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-vsomeip-rs = {git = "ssh://git@github.com/tw-sdv/vsomeip-rs"}
+vsomeip-rs = {path = "../vsomeip-rs"}
 someip_types = { path = "../someip_types" }

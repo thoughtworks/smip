@@ -1,0 +1,2 @@
+#!/bin/bash
+LD_LIBRARY_PATH=/usr/local/lib VSOMEIP_CONFIGURATION=./scripts/config_file.json cargo run --example simple_client_server -- server
