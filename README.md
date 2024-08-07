@@ -88,6 +88,4 @@ cargo run --example simple_client
 ## License
 
 - smip is licensed under [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0), check [LICENSE.md](./LICENSE.md) for more information.
-
-
-- This project uses the vSomeIP library which is licensed under [MPL 2.0](https://www.mozilla.org/en-US/MPL/2.0/), check [LICENSE_vsomeip](./LICENSE_vsomeip) for more information.
+- This project uses the vSomeIP library which is licensed under [MPL 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
